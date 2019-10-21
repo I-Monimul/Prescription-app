@@ -1,0 +1,165 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+	<h2 class="title is-2">Medicine: Edit-{data.id}
+		<a href="#medicine" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
+	</h2>
+	<hr />
+	<form on:submit="save(event)">
+		{#if !loaded}
+			<Loader />
+		{/if}
+    {#if loaded}
+			<div class="field">
+				<label class="label">Medicine</label>
+				<div class="control">
+					<input class="input" type="text" placeholder="Medicine" bind:value=data.medicine disabled="{save}" required autofocus style="text-transform: uppercase;">
+				</div>
+			</div>
+			<div class="field">
+				<label class="label">Generic</label>
+				{#each generics as generic, i}
+					<div class="field is-grouped">
+						<div class="control is-expanded">
+							<input class="input" type="text" placeholder="Generic" bind:value=generic disabled="{save}" required autofocus style="text-transform: uppercase;">
+						</div>
+						<div class="control">
+						<button type="button" class="button is-danger" on:click="splice('generics', i, 1)"><i class="fas fa-times"></i></button>
+					</div>
+				</div>
+				{/each}
+			</div>
+			<div class="field add">
+				<div class="control">
+					<button type="button" class="button is-success" on:click="push('generics', '')"><i class="fas fa-plus"></i></button>
+				</div>
+			</div>
+			<hr />
+			<div class="field">
+				<div class="control">
+					<SubmitButton tracker={tracker} on:submit></SubmitButton>
+				</div>
+			</div>
+		{/if}
+		<center class="has-text-danger has-text-weight-bold">{error_message}</center>
+	</form>
+</div>
+
+<script>
+	import Model from "../../../models/medicine";
+	import Loader from '../../helpers/loader.html';
+	import SubmitButton from '../../helpers/SubmitButton.html';
+	import { fly } from 'svelte-transitions';
+	import { push, splice } from 'svelte-extras';
+
+	export default {
+		transitions: { fly },
+		components: {
+			Loader,
+			SubmitButton
+		},
+
+		data() {
+			return {
+				data: {
+					id: "",
+					medicine: "",
+					generics: ""
+				},
+				generics: [""],
+				loaded: false,
+				save: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				error_message: ""
+			}
+		},
+		oncreate() {
+			this.load();
+		},
+		methods: {
+			push,
+			splice,
+			load() {
+				var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
+				locs = locs.split('#');
+
+				Model.getOne(locs[2])
+					.then((e) => {
+						var record = e.data.records;
+						this.get().generics = record.generics.split(',');
+						this.set({
+							data: record,
+							loaded: true
+						});
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading medicine!"
+						});
+					});
+			},
+			save(e) {
+				e.preventDefault();
+
+				this.get().data.generics = this.get().generics.join().toUpperCase();
+				this.get().data.medicine = this.get().data.medicine.toUpperCase();
+
+				var { data } = this.get();
+
+				this.set({
+					save: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.put(data.id, data)
+					.then((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: true,
+								error: false
+							}
+						});
+
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saved: false
+								},
+							});
+							window.location.assign("#medicine");
+						}, 1500);
+
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							},
+							error_message: "There is an error editing medicine!"
+						});
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								},
+								error_message: ""
+							});
+						}, 1500);
+					});
+			}
+		}
+	}
+</script>

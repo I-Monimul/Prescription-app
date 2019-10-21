@@ -1,0 +1,120 @@
+<div class="container" transition:fly="{y: 200, duration: 1000}">
+  <div class="columns">
+    <div class="column is-one-third">
+      <a href="#patient">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Patient</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="column is-one-third">
+      <a href="#medicine">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Medicine</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="column is-one-third">
+      <a href="#diagnosis">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Diagnosis</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <div class="columns">
+    <div class="column is-one-third">
+      <a href="#complaint">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Complaint</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="column is-one-third">
+      <a href="#examination">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Examination</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="column is-one-third">
+      <a href="#investigation">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Investigation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <div class="columns">
+    <div class="column is-half">
+      <a href="#investigationhistory">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Investigation History</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="column is-half">
+      <a href="#prescriptionhistory">
+        <div class="card">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-2 has-text-white">Prescription History</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { fly } from 'svelte-transitions';
+
+  export default {
+    transitions: { fly }
+  }
+</script>

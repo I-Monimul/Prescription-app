@@ -1,0 +1,16 @@
+<footer class="footer has-background-primary" transition:fly="{y: 200, duration: 1000}"
+	style="width:100%;position:fixed;bottom:0;padding:0.5rem;">
+	<div class="content has-text-centered">
+		<p>
+			<strong>Prescription</strong> by <a href="#dashboard">WiIn</a>.
+		</p>
+	</div>
+</footer>
+
+<script>
+	import { fly } from 'svelte-transitions';
+
+	export default {
+		transitions: { fly }
+	}
+</script>

@@ -1,0 +1,147 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+  <h2 class="title is-2">Medicine: List
+    <a href="#medicine#add" class="button is-info is-pulled-right"><i class="fas fa-plus"></i>&nbsp;Add</a>
+  </h2>
+
+  <hr />
+  <br />
+  <h4 class="subtitle is-4">Search by </h4>
+  <div class="field is-horizontal">
+    <div class="field-label is-normal">
+      <label class="label">Medicine: </label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        <p class="control is-expanded">
+          <input list="medicine_datalist" class="input is-half" type="text" placeholder="Medicine"
+            bind:value=search.medicine style="text-transform: uppercase;">
+          <datalist id="medicine_datalist">
+            {#each data as each_data}
+                <option value={each_data.medicine} />
+              {/each}
+            </datalist>
+          </p>
+        </div>
+      </div>
+      <div class="field-label is-normal">
+        <label class="label">Generic: </label>
+      </div>
+      <div class="field-body">
+        <div class="field">
+          <p class="control is-expanded">
+            <input list="generic_datalist" class="input is-half" type="text" placeholder="Generics" bind:value=search.generics style="text-transform: uppercase;">
+            <datalist id="generic_datalist">
+                {#each data as each_data}
+                  <option value={each_data.generics} />
+                {/each}
+            </datalist>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="{table_div}">
+      {#if loaded}
+        <table class="table is-fullwidth" transition:fly="{x: 200, duration: 1000}">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medicine</th>
+              <th>Generics</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+              {#each data as each_data}
+                {#if (!search.medicine || each_data.medicine.toUpperCase().search(search.medicine.toUpperCase())>=0) && (!search.generics || each_data.generics.toUpperCase().search(search.generics.toUpperCase())>=0)}
+                  <tr>
+                    <th>{each_data.id}</th>
+                    <td>{each_data.medicine ? each_data.medicine : 'None'}</td>
+                    <td>{each_data.generics ? each_data.generics : 'None'}</td>
+                    <td><a href="#medicine#edit#{each_data.id}" class="button is-outlined is-warning"><i class="fas fa-edit"></i></a></td>
+                    <td><ConfirmButton context={each_data.id} on:do on:done></ConfirmButton></td>
+                  </tr>
+                {/if}
+              {/each}
+          </tbody>
+        </table>
+      {/if}
+    </div>
+    {#if !loaded}
+      <Loader />
+    {/if}
+    <center class="has-text-danger has-text-weight-bold">{error_message}</center>
+  </div>
+<script>
+  import Model from "../../../models/medicine";
+  import Loader from '../../helpers/loader.html';
+  import ConfirmButton from '../../helpers/ConfirmButton.html';
+  import { fly } from 'svelte-transitions';
+
+  export default {
+    transitions: { fly },
+    components: {
+      Loader,
+      ConfirmButton
+    },
+    data() {
+      return {
+        data: {
+          id: "",
+          medicine: "",
+          generics: ""
+        },
+        loaded: false,
+        error_message: "",
+        search: {
+          medicine: "",
+          generics: ""
+        },
+        table_div: ""
+      }
+    },
+    oncreate() {
+      this.load();
+
+      this.on('do', (comp) => {
+        comp.doing();
+        this.delete(comp);
+      });
+
+      this.on('done', () => {
+        this.load();
+      });
+    },
+    methods: {
+      load() {
+        Model.getAll()
+          .then((e) => {
+            this.set({ loaded: true });
+            setTimeout(() => {
+              this.set({
+                table_div: "table_div"
+              });
+            }, 1000);
+
+            var record = e.data.records;
+            this.set({ data: record })
+          })
+          .catch((e) => {
+            this.set({
+              loaded: true,
+              error_message: "There is an error loading medicines!"
+            });
+          });
+      },
+      delete(comp) {
+        Model.delete(comp.get().context)
+          .then((e) => {
+            comp.done();
+          })
+          .catch((e) => {
+            comp.error();
+          });
+      }
+    }
+  }
+</script>

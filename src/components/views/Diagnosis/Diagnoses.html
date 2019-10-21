@@ -1,0 +1,128 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+  <h2 class="title is-2">Diagnosis: List
+    <a href="#diagnosis#add" class="button is-info is-pulled-right"><i class="fas fa-plus"></i>&nbsp;Add</a>
+  </h2>
+
+  <hr />
+  <br />
+  <h4 class="subtitle is-4">Search by </h4>
+  <div class="field is-horizontal">
+    <div class="field-label is-normal">
+      <label class="label">Diagnosis: </label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        <p class="control is-expanded">
+          <input list="diagnosis_datalist" class="input is-half" type="text" placeholder="Diagnosis"
+            bind:value=search.diagnosis>
+          <datalist id="diagnosis_datalist">
+            {#each data as each_data}
+                <option value={each_data.diagnosis} />
+              {/each}
+            </datalist>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="{table_div}">
+      {#if loaded}
+        <table class="table is-fullwidth" transition:fly="{x: 200, duration: 1000}">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Diagnosis</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+              {#each data as each_data}
+                {#if !search.diagnosis || each_data.diagnosis.toUpperCase().search(search.diagnosis.toUpperCase())>=0}
+                  <tr>
+                    <th>{each_data.id}</th>
+                    <td>{each_data.diagnosis ? each_data.diagnosis : 'None'}</td>
+                    <td><a href="#diagnosis#edit#{each_data.id}" class="button is-outlined is-warning"><i class="fas fa-edit"></i></a></td>
+                    <td><ConfirmButton context={each_data.id} on:do on:done></ConfirmButton></td>
+                  </tr>
+                {/if}
+              {/each}
+          </tbody>
+        </table>
+      {/if}
+    </div>
+    {#if !loaded}
+      <Loader />
+    {/if}
+    <center class="has-text-danger has-text-weight-bold">{error_message}</center>
+  </div>
+<script>
+  import Model from "../../../models/diagnosis";
+  import Loader from '../../helpers/loader.html';
+  import ConfirmButton from '../../helpers/ConfirmButton.html';
+  import { fly } from 'svelte-transitions';
+
+  export default {
+    transitions: { fly },
+    components: {
+      Loader,
+      ConfirmButton
+    },
+    data() {
+      return {
+        data: {
+          id: "",
+          diagnosis: ""
+        },
+        loaded: false,
+        error_message: "",
+        search: {
+          diagnosis: ""
+        },
+        table_div: ""
+      }
+    },
+    oncreate() {
+      this.load();
+
+      this.on('do', (comp) => {
+        comp.doing();
+        this.delete(comp);
+      });
+
+      this.on('done', () => {
+        this.load();
+      });
+    },
+    methods: {
+      load() {
+        Model.getAll()
+          .then((e) => {
+            this.set({ loaded: true });
+            setTimeout(() => {
+              this.set({
+                table_div: "table_div"
+              });
+            }, 1000);
+
+            var record = e.data.records;
+            this.set({ data: record })
+          })
+          .catch((e) => {
+            this.set({
+              loaded: true,
+              error_message: "There is an error loading diagnoses!"
+            });
+          });
+      },
+      delete(comp) {
+        Model.delete(comp.get().context)
+          .then((e) => {
+            comp.done();
+          })
+          .catch((e) => {
+            comp.error();
+          });
+      }
+    }
+  }
+</script>

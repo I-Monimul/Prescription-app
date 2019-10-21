@@ -1,0 +1,117 @@
+<svelte:component this={comps} />
+
+<script>
+	import Dashboard from '../Dashboard.html';
+
+	import Medicines from '../views/Medicine/Medicines.html';
+	import AddMedicine from '../views/Medicine/AddMedicine.html';
+	import EditMedicine from '../views/Medicine/EditMedicine.html';
+
+	import Patients from '../views/Patient/Patients.html';
+	import AddPatient from '../views/Patient/AddPatient.html';
+	import EditPatient from '../views/Patient/EditPatient.html';
+
+	import Diagnoses from '../views/Diagnosis/Diagnoses.html';
+	import AddDiagnosis from '../views/Diagnosis/AddDiagnosis.html';
+	import EditDiagnosis from '../views/Diagnosis/EditDiagnosis.html';
+
+	import Complaints from '../views/Complaint/Complaints.html';
+	import AddComplaint from '../views/Complaint/AddComplaint.html';
+	import EditComplaint from '../views/Complaint/EditComplaint.html';
+
+	import Examinations from '../views/Examination/Examinations.html';
+	import AddExamination from '../views/Examination/AddExamination.html';
+	import EditExamination from '../views/Examination/EditExamination.html';
+
+	import Investigations from '../views/Investigation/Investigations.html';
+	import AddInvestigation from '../views/Investigation/AddInvestigation.html';
+	import EditInvestigation from '../views/Investigation/EditInvestigation.html';
+
+	import InvestigationHistory from '../views/InvestigationHistory/InvestigationHistory.html';
+	import AddInvestigationHistory from '../views/InvestigationHistory/AddInvestigationHistory.html';
+	import EditInvestigationHistory from '../views/InvestigationHistory/EditInvestigationHistory.html';
+
+	import PrescriptionHistory from '../views/PrescriptionHistory/PrescriptionHistory.html';
+	import AddPrescriptionHistory from '../views/PrescriptionHistory/AddPrescriptionHistory.html';
+	import EditPrescriptionHistory from '../views/PrescriptionHistory/EditPrescriptionHistory.html';
+
+	export default {
+		components: {
+			Dashboard,
+
+			Medicines,
+			AddMedicine,
+			EditMedicine,
+
+			Patients,
+			AddPatient,
+			EditPatient,
+
+			Diagnoses,
+			AddDiagnosis,
+			EditDiagnosis,
+
+			Complaints,
+			AddComplaint,
+			EditComplaint,
+
+			Examinations,
+			AddExamination,
+			EditExamination,
+
+			Investigations,
+			AddInvestigation,
+			EditInvestigation,
+
+			InvestigationHistory,
+			AddInvestigationHistory,
+			EditInvestigationHistory,
+
+			PrescriptionHistory,
+			AddPrescriptionHistory,
+			EditPrescriptionHistory
+		},
+		data() {
+			return {
+				comp: ""
+			}
+		},
+		computed: {
+			comps: ({ comp }) => {
+				if (comp == 'dashboard') return Dashboard;
+
+				else if (comp == 'medicine') return Medicines;
+				else if (comp == 'addmedicine') return AddMedicine;
+				else if (comp == 'editmedicine') return EditMedicine;
+
+				else if (comp == 'patient') return Patients;
+				else if (comp == 'addpatient') return AddPatient;
+				else if (comp == 'editpatient') return EditPatient;
+
+				else if (comp == 'diagnosis') return Diagnoses;
+				else if (comp == 'adddiagnosis') return AddDiagnosis;
+				else if (comp == 'editdiagnosis') return EditDiagnosis;
+
+				else if (comp == 'complaint') return Complaints;
+				else if (comp == 'addcomplaint') return AddComplaint;
+				else if (comp == 'editcomplaint') return EditComplaint;
+
+				else if (comp == 'examination') return Examinations;
+				else if (comp == 'addexamination') return AddExamination;
+				else if (comp == 'editexamination') return EditExamination;
+
+				else if (comp == 'investigation') return Investigations;
+				else if (comp == 'addinvestigation') return AddInvestigation;
+				else if (comp == 'editinvestigation') return EditInvestigation;
+
+				else if (comp == 'investigationhistory') return InvestigationHistory;
+				else if (comp == 'addinvestigationhistory') return AddInvestigationHistory;
+				else if (comp == 'editinvestigationhistory') return EditInvestigationHistory;
+
+				else if (comp == 'prescriptionhistory') return PrescriptionHistory;
+				else if (comp == 'addprescriptionhistory') return AddPrescriptionHistory;
+				else if (comp == 'editprescriptionhistory') return EditPrescriptionHistory;
+			}
+		}
+	}
+</script>

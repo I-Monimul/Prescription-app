@@ -1,0 +1,172 @@
+{#if logged_in}
+  <Menu menu_now={locs[0]} on:logout />
+
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <br />
+  <div class="container is-paddingless" transition:fly="{y: 200, duration: 1000}">
+    <Component comp={comp} />
+  </div>
+  <br />
+  <br />
+  <br />
+{:else}
+  <LogIn on:logged_in/>
+{/if}
+<Footer />
+<svelte:window on:hashchange="location()" />
+
+<script>
+  import LogIn from './components/LogIn.html';
+  import Menu from './components/Menu.html';
+  import Component from './components/helpers/Component.html';
+  import Footer from './components/Footer.html';
+  import Store from './services/store';
+  import State from './services/state';
+	import { fly } from 'svelte-transitions';
+
+  export default {
+    transitions: { fly },
+    components: {
+      LogIn,
+      Menu,
+      Component,
+      Footer
+    },
+    oncreate() {
+      var store = Store.get(),
+        state = State.get('state');
+      if (typeof state != 'undefined' && state) {
+        Store.set(state);
+        if (Store.get().is_logged_in) {
+          this.set({ logged_in: true });
+        }
+      }
+      else {
+        State.set('state', store);
+      }
+      
+      this.on('logged_in', () => {
+							setTimeout(() => {
+								
+        this.set({ logged_in: true });
+                this.location();
+							}, 500);
+      });
+
+      this.on('logout', () => {
+        this.set({ logged_in: false });
+
+        var state = {
+          is_logged_in: false,
+          user: { name: '', surname: '', email: '', username: '', avatar: '' },
+          role: null,
+          key: null
+        };
+
+        Store.set(state);
+        State.set('state', state);
+      });
+
+      this.location();
+    },
+    data() {
+      return {
+        logged_in: false,
+        comp: "Dashboard",
+        locs: ['dashboard']
+      }
+    },
+    methods: {
+      location() {
+        var comp = "",
+            locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
+        if (this.get().logged_in && locs) {
+          locs = locs.split('#');
+          this.set({ locs: locs });
+
+          if (locs.length == 1) {
+            if (locs[0] == 'medicine'
+                  || locs[0] == 'patient'
+                  || locs[0] == 'diagnosis'
+                  || locs[0] == 'complaint'
+                  || locs[0] == 'examination'
+                  || locs[0] == 'investigation'
+                  || locs[0] == 'investigationhistory'
+                  || locs[0] == 'prescriptionhistory')
+            {
+              this.set({ comp: locs[0] });
+            }
+            else {
+              this.set({ comp: 'dashboard' });
+            }
+          }
+          else if (locs.length == 2) {
+            if (locs[1] == 'add'
+                  && (locs[0] == 'medicine'
+                  || locs[0] == 'patient'
+                  || locs[0] == 'diagnosis'
+                  || locs[0] == 'complaint'
+                  || locs[0] == 'examination'
+                  || locs[0] == 'investigation'))
+            {
+              comp = 'add' + locs[0];
+              this.set({ comp: comp });
+            }
+            else if (Number.isInteger(parseInt(locs[1]))
+                && (locs[0] == 'investigationhistory'
+                || locs[0] == 'prescriptionhistory'))
+            {
+              comp = locs[0];
+              this.set({ comp: comp });
+            }
+            else {
+              this.set({ comp: 'dashboard' });
+            }
+          }
+          else if (locs.length == 3) {
+            if (Number.isInteger(parseInt(locs[2]))
+                  && locs[1] == 'edit'
+                  && (locs[0] == 'medicine'
+                  || locs[0] == 'patient'
+                  || locs[0] == 'diagnosis'
+                  || locs[0] == 'complaint'
+                  || locs[0] == 'examination'
+                  || locs[0] == 'investigation'
+                  || locs[0] == 'investigationhistory'
+                  || locs[0] == 'prescriptionhistory'))
+            {
+              comp = 'edit' + locs[0];
+              this.set({ comp: comp });
+            }
+            else {
+              this.set({ comp: 'dashboard' });
+            }
+          }
+          else if (locs.length == 4) {
+            if (Number.isInteger(parseInt(locs[3]))
+                  && locs[1] == 'add'
+                  && ((locs[2] == 'p' &&  locs[0] == 'investigationhistory')
+                  || ((locs[2] == 'p' ||  locs[2] == 'i') &&  locs[0] == 'prescriptionhistory')))
+            {
+              comp = 'add' + locs[0];
+              this.set({ comp: comp });
+            }
+            else {
+              this.set({ comp: 'dashboard' });
+            }
+          }
+          else {
+            this.set({ comp: 'dashboard' });
+          }
+        }
+        else {
+          window.location.assign("#dashboard");
+        }
+      }
+    }
+  }
+</script>

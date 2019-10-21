@@ -1,0 +1,138 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+	<h2 class="title is-2">Complaint: Edit-{data.id}
+		<a href="#complaint" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
+	</h2>
+	<hr />
+	<form on:submit="save(event)">
+		{#if !loaded}
+			<Loader />
+		{/if}
+    {#if loaded}
+			<div class="field">
+				<label class="label">Complaint</label>
+				<div class="control">
+					<input class="input" type="text" placeholder="Complaint" bind:value=data.complaint disabled="{save}" required>
+				</div>
+			</div>
+			<hr />
+			<div class="field">
+				<div class="control">
+					<SubmitButton tracker={tracker} on:submit></SubmitButton>
+				</div>
+			</div>
+			{/if}
+		<center class="has-text-danger has-text-weight-bold">{error_message}</center>
+	</form>
+</div>
+
+<script>
+	import Model from "../../../models/complaint";
+	import Loader from '../../helpers/loader.html';
+	import SubmitButton from '../../helpers/SubmitButton.html';
+	import { fly } from 'svelte-transitions';
+
+	export default {
+		transitions: { fly },
+		components: {
+			Loader,
+			SubmitButton
+		},
+
+		data() {
+			return {
+				data: {
+					id: "",
+					complaint: "",
+				},
+				loaded: false,
+				save: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				error_message: ""
+			}
+		},
+		oncreate() {
+			this.load();
+		},
+		methods: {
+			load() {
+				var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
+				locs = locs.split('#');
+
+				Model.getOne(locs[2])
+					.then((e) => {
+						var record = e.data.records;
+						this.set({
+							data: record,
+							loaded: true
+						});
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading complaint!"
+						});
+					});
+			},
+			save(e) {
+				e.preventDefault();
+
+				var { data } = this.get();
+
+				this.set({
+					save: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.put(data.id, data)
+					.then((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: true,
+								error: false
+							}
+						});
+
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saved: false
+								},
+							});
+							window.location.assign("#complaint");
+						}, 1500);
+
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							},
+							error_message: "There is an error editing complaint!"
+						});
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								},
+								error_message: ""
+							});
+						}, 1500);
+					});
+			}
+		}
+	}
+</script>

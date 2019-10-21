@@ -1,0 +1,111 @@
+<div class="field {confirm ? 'has-addons' : ''} {classes}">
+	<p class="control">
+		{#if confirm}
+		<button class="button is-success is-{size}" type="button" on:click="cancel()"><i class="fas fa-times"></i>&nbsp;Cancel</button>
+	{/if}
+	</p>
+	<p class="control is-expanded">
+		<button class="button is-outlined is-{size} {doing ? main_color + ' is-loading' : (error ? 'is-danger shaking' : (done ? main_color : (confirm ? 'is-outlined ' + main_color : main_color)))}" type="button" on:click="doit()" disabled="{done || doing || error || disabled}">
+		{#if done}
+			<span><i class="fas fa-check"></i> {done_text}</span>
+		{:elseif doing}
+			<span>{doing_text}</span>
+		{:elseif confirm}
+			<span>Are you sure?</span>
+		{:elseif error}
+			<span>Failed!</span>
+		{:elseif !confirm && !doing && !done && !error}
+			<span><i class="fas fa-{icon}"></i>{text}</span>
+		{/if}
+		</button>
+	</p>
+</div>
+
+<script>
+	export default {
+		data: function () {
+			return {
+				classes: '',
+				size: '',
+				color: 'danger',
+				icon: 'trash',
+				text: '',
+				doing_text: 'Deleting...',
+				done_text: 'Deleted',
+				confirm: false,
+				doing: false,
+				done: false,
+				error: false,
+				context: null,
+				disabled: false
+			}
+		},
+		computed: {
+			main_color({ color }) {
+				return 'is-' + color;
+			},
+			icon_size({ size }) {
+				switch (size) {
+					case 'large':
+						return '';
+						break;
+					default:
+						return 'small';
+						break;
+				}
+			}
+		},
+		onstate({ changed, current, previous }) {
+			if (changed.type) {
+				this.set({ color: current.type })
+			}
+		},
+		methods: {
+			cancel() {
+				this.set({ confirm: false });
+			},
+			doit() {
+				var _confirm = this.get().confirm;
+				if (!_confirm) {
+					this.set({ confirm: true });
+				}
+				else {
+					this.fire('do', this);
+				}
+			},
+			doing() {
+				this.set({
+					confirm: false,
+					doing: true,
+					done: false,
+					error: false
+				});
+			},
+			done() {
+				this.set({
+					doing: false,
+					done: true,
+					error: false
+				});
+
+				setTimeout(() => {
+					this.set({ done: false });
+					this.fire('done');
+				}, 1500)
+			},
+			error() {
+				this.set({
+					done: false,
+					doing: false,
+					error: true
+				});
+
+				setTimeout(() => {
+					this.set({ error: false });
+					this.fire('error');
+				}, 1500)
+
+			}
+		}
+	}
+</script>

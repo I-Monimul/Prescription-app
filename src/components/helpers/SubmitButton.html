@@ -1,0 +1,59 @@
+<div class="field">
+	<p class="control is-expanded">
+		<button
+			class="button is-{size} {tracker.saving ? main_color + ' is-loading' : (tracker.error ? 'is-danger shaking' : (tracker.saved ? 'is-success' : main_color ))}"
+			type="Submit" on:submit disabled="{tracker.saved || tracker.saving || tracker.error || disabled}">
+			{#if tracker.saved}
+				<span><i class="fas fa-check"></i>&nbsp;{saved_text}</span>
+			{:elseif tracker.saving}
+				<span><i class="fas fa-hourglass"></i>&nbsp;{saving_text}</span>
+			{:elseif tracker.error}
+				<span><i class="fas fa-close"></i>&nbsp;Failed!</span>
+			{:elseif !tracker.saving && !tracker.saved && !tracker.error}
+				<span>{#if has_icon}<i class="fas fa-{icon}"></i>&nbsp;{/if}{save_text}</span>
+			{/if}
+	  </button>
+	</p>
+</div>
+
+<script>
+	export default {
+		data: function () {
+			return {
+				size: '',
+				color: 'link',
+				icon: 'save',
+				has_icon: true,
+				save_text: 'Save',
+				saving_text: 'Saving...',
+				saved_text: 'Saved',
+				disabled: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+			}
+		},
+		computed: {
+			main_color({ color }) {
+				return 'is-' + color;
+			},
+			icon_size({ size }) {
+				switch (size) {
+					case 'large':
+						return '';
+						break;
+					default:
+						return 'small';
+						break;
+				}
+			}
+		},
+		onstate({ changed, current, previous }) {
+			if (changed.type) {
+				this.set({ color: current.type })
+			}
+		},
+	}
+</script>

@@ -1,0 +1,111 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+	<h2 class="title is-2">Investigation: Add
+		<a href="#investigation" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
+	</h2>
+	<hr />
+	<form on:submit="save(event)">
+		<div class="field">
+			<label class="label">Investigation</label>
+			<div class="control">
+				<input class="input" type="text" placeholder="Investigation" bind:value=data.investigation disabled="{save}"
+					required>
+			</div>
+		</div>
+		<hr />
+		<div class="field">
+			<div class="control">
+				<SubmitButton tracker={tracker} on:submit></SubmitButton>
+			</div>
+		</div>
+		<center class="has-text-danger has-text-weight-bold">{error_message}</center>
+	</form>
+</div>
+
+<script>
+	import Model from "../../../models/investigation";
+	import Loader from '../../helpers/loader.html';
+	import SubmitButton from '../../helpers/SubmitButton.html';
+	import { fly } from 'svelte-transitions';
+
+	export default {
+		transitions: { fly },
+		components: {
+			Loader,
+			SubmitButton
+		},
+
+		data() {
+			return {
+				data: {
+					investigation: "",
+				},
+				save: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				error_message: ""
+			}
+		},
+		methods: {
+			save(e) {
+				e.preventDefault();
+
+				var { data } = this.get();
+
+				this.set({
+					save: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.post(data)
+					.then((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: true,
+								error: false
+							}
+						});
+
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saved: false
+								},
+							});
+							window.location.assign("#investigation");
+						}, 1500);
+
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							},
+							error_message: "There is an error adding investigation!"
+						});
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								},
+								error_message: ""
+							});
+						}, 1500);
+					});
+			}
+		}
+	}
+</script>

@@ -1,0 +1,81 @@
+{#if !logging_out}
+<nav class="navbar is-fixed-top has-background-primary" role="navigation" aria-label="main navigation"
+  transition:fly="{y: -200, duration: 1000}">
+  <div class="navbar-brand">
+    <div class="navbar-item {menu_now=='dashboard' ? 'menu-active' : 'menu-inactive'}"
+      on:click="menuChange('dashboard')">
+      <img src="images/1200px-Rx_symbol_border.svg.png" style="min-width:80px;min-height:80px;" alt="logo">
+    </div>
+
+    <a role="button" class="navbar-burger burger {open ? 'is-active' : ''}" aria-label="menu" aria-expanded="false"
+      data-target="navbarBasicExample" on:click="toggleMenu()">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+
+  <div id="navbarBasicExample" class="navbar-menu has-background-primary is-paddingless {open ? 'is-active' : ''}">
+    <div class="navbar-start has-background-primary">
+      {#each data as menu}
+        <div class="navbar-item {menu_now==menu.value ? 'menu-active' : 'menu-inactive'}" on:click="menuChange(menu.value)">
+          {menu.name}
+        </div>
+      {/each}
+    </div>
+    <div class="navbar-end has-background-primary">
+      <div class="navbar-item is-right menu-inactive" on:click="logout()">
+        Log out
+      </div>
+    </div>
+  </div>
+</nav>
+{/if}
+  
+<script>
+	import { fly } from 'svelte-transitions';
+
+	export default {
+		transitions: { fly },
+		components: {
+
+		},
+		data() {
+			return {
+				data: [
+					{ name: "Patient", value: "patient" },
+					{ name: "Investigation History", value: "investigationhistory" },
+					{ name: "Prescription History", value: "prescriptionhistory" },
+					{ name: "Medicine", value: "medicine" },
+					{ name: "Diagnosis", value: "diagnosis" },
+					{ name: "Complaint", value: "complaint" },
+					{ name: "Examination", value: "examination" },
+					{ name: "Investigation", value: "investigation" }
+				],
+				menu_now: {},
+				open: false,
+				logging_out: false
+			}
+		},
+		methods: {
+			menuChange(menu) {
+				this.set({ menu_now: menu });
+				window.location.assign("#" + menu);
+				this.toggleMenu();
+			},
+			toggleMenu() {
+				if (this.get().open == false) {
+					this.set({ open: true });
+				}
+				else {
+					this.set({ open: false });
+				}
+			},
+			logout() {
+				this.fire('logout');
+				this.set({ logging_out: true });
+			}
+		}
+	}
+
+</script>

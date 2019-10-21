@@ -1,0 +1,326 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+	<h2 class="title is-2">Investigation History: Add
+		<a href="#investigationhistory" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;History</a>
+	</h2>
+	<hr />
+	{#if !loaded}
+		<Loader />
+	{/if}
+	{#if loaded}
+	<div transition:fly="{x: -200, duration: 1000}">
+	<p class="title is-5">Patient:</p>
+	<div class="columns">
+		<div class="column is-one-quarter">
+			Name: <b>{data.patient.name}</b>
+		</div>
+		<div class="column is-one-quarter">
+			Age: <b>{data.patient.age}</b>
+		</div>
+		<div class="column is-one-quarter">
+			Address: <b>{data.patient.address}</b>
+		</div>
+		<div class="column is-one-quarter">
+			Reference: <b>{data.patient.reference}</b>
+		</div>
+	</div>
+	<hr style="height: 5px;" />
+</div>
+	<form on:submit="save(event)" transition:fly="{x: 200, duration: 1000}">
+		<div class="field">
+			<label class="label">Complaints</label>
+			{#each complaints as complaint, i}
+				<div class="field is-grouped">
+					<div class="control is-expanded">
+						<input list="complaint_datalist" class="input" type="text" placeholder="Complaint" bind:value=complaint.complaint disabled="{save}" required autofocus>
+					</div>
+					<div class="control is-expanded">
+						<textarea class="textarea" rows="1" placeholder="Description" bind:value=complaint.complaint_description disabled="{save}"></textarea>
+					</div>
+					<div class="control">
+						<button type="button" class="button is-danger" on:click="splice('complaints', i, 1)"><i class="fas fa-times"></i></button>
+					</div>
+				</div>
+			{/each}
+				<datalist id="complaint_datalist">
+					{#each all_complaints as complaint}
+						<option value="{complaint.complaint}"/>
+					{/each}
+				</datalist>
+		</div>
+		<div class="field add">
+			<div class="control">
+				<button type="button" class="button is-success" on:click="push('complaints', {complaint:'',complaint_description:''})"><i class="fas fa-plus"></i></button>
+			</div>
+		</div>
+		<hr />
+		<div class="field">
+			<label class="label">Examinations</label>
+			{#each examinations as examination, i}
+				<div class="field is-grouped">
+					<div class="control is-expanded">
+						<input list="examination_datalist" class="input" type="text" placeholder="Examination" bind:value=examination.examination disabled="{save}" required autofocus>
+					</div>
+					<div class="control is-expanded">
+						<textarea class="textarea" rows="1" placeholder="Description" bind:value=examination.examination_description disabled="{save}"></textarea>
+					</div>
+					<div class="control">
+						<button type="button" class="button is-danger" on:click="splice('examinations', i, 1)"><i class="fas fa-times"></i></button>
+					</div>
+				</div>
+			{/each}
+				<datalist id="examination_datalist">
+					{#each all_examinations as examination}
+						<option value="{examination.examination}"/>
+					{/each}
+				</datalist>
+		</div>
+		<div class="field add">
+			<div class="control">
+				<button type="button" class="button is-success" on:click="push('examinations', {examination:'',examination_description:''})"><i class="fas fa-plus"></i></button>
+			</div>
+		</div>
+		<hr />
+		<div class="field">
+			<label class="label">Investigations</label>
+			{#each investigations as investigation, i}
+				<div class="field is-grouped">
+					<div class="control is-expanded">
+						<input list="investigation_datalist" class="input" type="text" placeholder="Investigation" bind:value=investigation disabled="{save}" required autofocus>
+					</div>
+					<div class="control">
+						<button type="button" class="button is-danger" on:click="splice('investigations', i, 1)"><i class="fas fa-times"></i></button>
+					</div>
+				</div>
+			{/each}
+				<datalist id="investigation_datalist">
+					{#each all_investigations as investigation}
+						<option value="{investigation.investigation}"/>
+					{/each}
+				</datalist>
+		</div>
+		<div class="field add">
+			<div class="control">
+				<button type="button" class="button is-success" on:click="push('investigations', '')"><i class="fas fa-plus"></i></button>
+			</div>
+		</div>
+		<hr />
+		<div class="field is-grouped">
+			<div class="control">
+				<SubmitButton tracker={tracker} on:submit></SubmitButton>
+			</div>
+			<div class="control">
+				<button class="button is-info" type="Submit" on:click="set({preview_investigation: true})"><i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Investigation</button>
+			</div>
+			<div class="control">
+				<button class="button is-success" type="Submit" on:click="set({goto_prescription: true})"><i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription</button>
+			</div>
+		</div>
+	</form>
+	{/if}
+	<center class="has-text-danger has-text-weight-bold">{error_message}</center>
+</div>
+
+<script>
+	import Model from "../../../models/investigation_history";
+	import Patient from "../../../models/patient";
+	import Complaint from "../../../models/complaint";
+	import Examination from "../../../models/examination";
+	import Investigation from "../../../models/investigation";
+	import Loader from '../../helpers/loader.html';
+	import SubmitButton from '../../helpers/SubmitButton.html';
+	import { fly } from 'svelte-transitions';
+	import { push, splice } from 'svelte-extras';
+
+	export default {
+		transitions: { fly },
+		components: {
+			Loader,
+			SubmitButton
+		},
+		oncreate() {
+			var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1].split('#');
+			this.get().data.patient = locs[3];
+
+			this.loadPatient();
+			this.loadComplaints();
+			this.loadExaminations();
+			this.loadInvestigations();
+		},
+		data() {
+			return {
+				data: {
+					patient: "",
+					complaints: "",
+					complaint_descriptions: "",
+					examinations: "",
+					examination_descriptions: "",
+					investigations: "",
+					date: ""
+				},
+				complaints: [{
+					complaint: "",
+					complaint_description: ""
+				}],
+				examinations: [{
+					examination: "",
+					examination_description: ""
+				}],
+				investigations: [""],
+				all_complaints: [],
+				all_examinations: [],
+				all_investigations: [],
+				loaded: false,
+				save: false,
+				preview_investigation: false,
+				goto_prescription: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				error_message: ""
+			}
+		},
+		methods: {
+			push,
+			splice,
+			loadPatient() {
+				var { patient } = this.get().data;
+				Patient.getOne(patient)
+					.then((e) => {
+						var record = e.data.records;
+						this.get().data.patient = record;
+						this.set({ loaded: true });
+
+						document.querySelector("input").focus();
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading patient!"
+						});
+					});
+			},
+			loadComplaints() {
+				Complaint.getAll()
+					.then((e) => {
+						var record = e.data.records;
+						this.set({ all_complaints: record });
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading complaints!"
+						});
+					});
+			},
+			loadExaminations() {
+				Examination.getAll()
+					.then((e) => {
+						var record = e.data.records;
+						this.set({ all_examinations: record });
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading examinations!"
+						});
+					});
+			},
+			loadInvestigations() {
+				Investigation.getAll()
+					.then((e) => {
+						var record = e.data.records;
+						this.set({ all_investigations: record });
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading investigations!"
+						});
+					});
+			},
+			save(e) {
+				e.preventDefault();
+
+				var complaints = [],
+					complaint_descriptions = [];
+				this.get().complaints.forEach((item, index) => {
+					complaints.push(item.complaint);
+					complaint_descriptions.push(item.complaint_description);
+				});
+
+				var examinations = [],
+					examination_descriptions = [];
+				this.get().examinations.forEach((item, index) => {
+					examinations.push(item.examination);
+					examination_descriptions.push(item.examination_description);
+				});
+
+				this.get().data.complaints = complaints.join();
+				this.get().data.complaint_descriptions = complaint_descriptions.join();
+				this.get().data.examinations = examinations.join();
+				this.get().data.examination_descriptions = examination_descriptions.join();
+				this.get().data.investigations = this.get().investigations.join();
+
+				var { data } = this.get();
+
+				this.set({
+					save: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.post(data)
+					.then((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: true,
+								error: false
+							}
+						});
+
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saved: false
+								},
+							});
+							if (this.get().preview_investigation) {
+								window.location.assign("#investigationhistory#" + r.data.records.id);
+							}
+							else if (this.get().goto_prescription) {
+								window.location.assign("#prescriptionhistory#add#i#" + r.data.records.id);
+							}
+							else {
+								window.location.assign("#investigationhistory");
+							}
+						}, 1500);
+
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							},
+							error_message: "There is an error creating investigation!"
+						});
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								},
+								error_message: ""
+							});
+						}, 1500);
+					});
+			}
+		}
+	}
+</script>

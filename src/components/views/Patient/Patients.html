@@ -1,0 +1,169 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+  <h2 class="title is-2">Patient: List
+    <a href="#patient#add" class="button is-info is-pulled-right"><i class="fas fa-plus"></i>&nbsp;Add</a>
+  </h2>
+
+  <hr />
+  <br />
+  <h4 class="subtitle is-4">Search by </h4>
+  <div class="field is-horizontal">
+    <div class="field-label is-normal">
+      <label class="label">Name: </label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        <p class="control is-expanded">
+          <input list="name_datalist" class="input is-half" type="text" placeholder="Name" bind:value=search.name>
+          <datalist id="name_datalist">
+            {#each data as each_data}
+                <option value={each_data.name} />
+              {/each}
+            </datalist>
+          </p>
+        </div>
+      </div>
+      <div class="field-label is-normal">
+        <label class="label">Phone: </label>
+      </div>
+      <div class="field-body">
+        <div class="field">
+          <p class="control is-expanded">
+            <input list="phone_datalist" class="input is-half" type="text" placeholder="Phone" bind:value=search.phone>
+            <datalist id="phone_datalist">
+                {#each data as each_data}
+                  <option value={each_data.phone} />
+                {/each}
+            </datalist>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="{table_div}">
+      {#if loaded}
+        <table class="table is-fullwidth" transition:fly="{x: 200, duration: 1000}">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Address</th>
+              <th>Reference</th>
+              <th><center>Create Investigation</center></th>
+              <th><center>Create Prescription</center></th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+              {#each data as each_data}
+                {#if (!search.name || each_data.name.toUpperCase().search(search.name.toUpperCase())>=0) && (!search.phone || each_data.phone.toUpperCase().search(search.phone.toUpperCase())>=0)}
+                  <tr>
+                    <th>{each_data.id}</th>
+                    <td>{each_data.name ? each_data.name : 'None'}</td>
+                    <td>{each_data.age ? each_data.age : 'None'}</td>
+                    <td>{each_data.gender ? (each_data.gender=='M' ? 'Male' : (each_data.gender=='F' ? 'Female' : 'Others')) : 'None'}</td>
+                    <td>{each_data.phone ? each_data.phone : 'None'}</td>
+                    <td>{each_data.email ? each_data.email : 'None'}</td>
+                    <td>{each_data.address ? each_data.address : 'None'}</td>
+                    <td>{each_data.reference ? each_data.reference : 'None'}</td>
+                    <td><center><a href="#investigationhistory#add#p#{each_data.id}" class="button is-link"><i class="fas fa-file-medical-alt"></i></a></center></td>
+                    <td><center><a href="#prescriptionhistory#add#p#{each_data.id}" class="button is-success"><i class="fas fa-file-prescription"></i></a></center></td>
+                    <td><a href="#patient#edit#{each_data.id}" class="button is-outlined is-warning"><i class="fas fa-edit"></i></a></td>
+                    <td><ConfirmButton context={each_data.id} on:do on:done></ConfirmButton></td>
+                  </tr>
+                {/if}
+              {/each}
+          </tbody>
+        </table>
+      {/if}
+    </div>
+    {#if !loaded}
+      <Loader />
+    {/if}
+    <center class="has-text-danger has-text-weight-bold">{error_message}</center>
+  </div>
+<script>
+  import Model from "../../../models/patient";
+  import Loader from '../../helpers/loader.html';
+  import ConfirmButton from '../../helpers/ConfirmButton.html';
+  import { fly } from 'svelte-transitions';
+
+  export default {
+    transitions: { fly },
+    components: {
+      Loader,
+      ConfirmButton
+    },
+    data() {
+      return {
+        data: {
+          id: "",
+          name: "",
+          age: "",
+          gender: "",
+          phone: "",
+          email: "",
+          address: "",
+          reference: ""
+        },
+        loaded: false,
+        error_message: "",
+        data: {
+          name: "",
+          phone: ""
+        },
+        search: {
+          name: "",
+          phone: ""
+        },
+        table_div: ""
+      }
+    },
+    oncreate() {
+      this.load();
+
+      this.on('do', (comp) => {
+        comp.doing();
+        this.delete(comp);
+      });
+
+      this.on('done', () => {
+        this.load();
+      });
+    },
+    methods: {
+      load() {
+        Model.getAll()
+          .then((e) => {
+            this.set({ loaded: true });
+            setTimeout(() => {
+              this.set({
+                table_div: "table_div"
+              });
+            }, 1000);
+
+            var record = e.data.records;
+            this.set({ data: record })
+          })
+          .catch((e) => {
+            this.set({
+              loaded: true,
+              error_message: "There is an error loading patients!"
+            });
+          });
+      },
+      delete(comp) {
+        Model.delete(comp.get().context)
+          .then((e) => {
+            comp.done();
+          })
+          .catch((e) => {
+            comp.error();
+          });
+      }
+    }
+  }
+</script>

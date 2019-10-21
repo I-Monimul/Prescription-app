@@ -1,0 +1,180 @@
+{#if !logged_in}
+<div class="box has-background-primary login {shaking ? 'shaking' : ''}" transition:fly="{y: -200, duration: 1000}">
+	<h3 class="title is-3 has-text-white">
+		Log In
+	</h3>
+	<hr />
+	<form on:submit="login(event)">
+		<div class="field">
+			<p class="control has-icons-left">
+				<input class="input" type="text" placeholder="Username" bind:value=data.username disabled="{logging_in}"
+					 style="text-transform: none ;">
+				<span class="icon is-small is-left">
+					<i class="fas fa-user"></i>
+				</span>
+			</p>
+		</div>
+		<div class="field">
+			<p class="control has-icons-left">
+				<input class="input" type="password" placeholder="Password" bind:value=data.password disabled="{logging_in}"
+					required>
+				<span class="icon is-small is-left">
+					<i class="fas fa-lock"></i>
+				</span>
+			</p>
+		</div>
+		<hr />
+		<div class="field">
+			<p class="control">
+				<SubmitButton has_icon={has_icon} tracker={tracker} save_text={save_text} saving_text={saving_text} saved_text={saved_text}
+					on:submit disabled="{!data.username || !data.password}"></SubmitButton>
+			</p>
+		</div>
+	</form>
+</div>
+{/if}
+
+<script>
+	import SubmitButton from './helpers/SubmitButton.html';
+	import Store from '../services/store';
+	import State from '../services/state';
+	import { fly } from 'svelte-transitions';
+	import Model from "../models/auth";
+
+	export default {
+		transitions: { fly },
+		components: {
+			SubmitButton
+		},
+		data() {
+			return {
+				data: {
+					username: "",
+					password: "",
+					login_type: ""
+				},
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				has_icon: false,
+				save_text: "Log In",
+				saving_text: "Logging In...",
+				saved_text: "logged In",
+				shaking: false,
+				logging_in: false,
+				logged_in: false
+			}
+		},
+		methods: {
+			login(e) {
+				e.preventDefault();
+
+				this.get().data.login_type = 'A';
+				var data = this.get().data;
+				//let type = 'A';
+
+				this.set({
+					logging_in: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.post(data)
+					.then((r) => {
+						var record, valid = false;
+						if (r.status == 200 || r.status == 201) {
+							try {
+								record = r.data.records;
+								if (typeof record.key != 'undefined' && record.key != '') {
+									valid = true;
+								}
+							} catch (e) { }
+						}
+						if (valid) {
+							this.valid();
+
+							var state = {
+								user: record,
+								key: record.key,
+								role: record.role,
+								is_logged_in: true
+							};
+							State.set('state', state);
+							Store.set(state);
+
+							this.set({
+								tracker: {
+									saving: false,
+									saved: true,
+									error: false
+								}
+							});
+
+							setTimeout(() => {
+								this.set({
+									tracker: {
+										saved: false
+									},
+									logged_in: true
+								});
+								this.fire('logged_in');
+							}, 500);
+						}
+						else {
+							this.invalid();
+						}
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							}
+						});
+
+						this.invalid();
+						setTimeout(() => {
+							this.set({
+								logging_in: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								}
+							});
+						}, 1500);
+					});
+
+			},
+			valid() {
+				this.set({
+					logging_in: false,
+					data: {
+						username: "",
+						password: "",
+						login_type: ""
+					}
+				});
+			},
+			invalid() {
+				this.set({
+					shaking: true
+				});
+				this.get().data.password = "";
+				setTimeout(() => {
+					this.set({
+						shaking: false,
+						logging_in: false
+					});
+				}, 500);
+			}
+		}
+	}
+
+</script>

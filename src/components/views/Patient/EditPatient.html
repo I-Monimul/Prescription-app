@@ -1,0 +1,213 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+	<h2 class="title is-2">Patient: Edit-{data.id}
+		<a href="#patient" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
+	</h2>
+	<hr />
+	<form on:submit="save(event)">
+		{#if !loaded}
+			<Loader />
+		{/if}
+    {#if loaded}
+			<div class="field">
+				<label class="label">Name</label>
+				<div class="control">
+					<input class="input" type="text" placeholder="Name" bind:value=data.name disabled="{save}" required style="text-transform: capitalize;">
+				</div>
+			</div>
+			<label class="label">Age</label>
+			<div class="field has-addons">
+				<div class="control is-expanded">
+					<input class="input" type="number" placeholder="Age" bind:value=data.age disabled="{save}" required>
+				</div>
+				<p class="control">
+					<a class="button is-static">
+						years
+					</a>
+				</p>
+			</div>
+			<div class="field">
+				<label class="label">Gender</label>
+				<div class="control">
+					<div class="select is-fullwidth">
+						<select bind:value=data.gender disabled="{save}" required>
+							<option value="">--Select Gender--</option>
+							<option value="M">Male</option>
+							<option value="F">Female</option>
+							<option value="O">Others</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<label class="label">Phone</label>
+			<div class="field has-addons">
+				<p class="control">
+					<a class="button is-static">
+						+88
+					</a>
+				</p>
+				<div class="control is-expanded">
+					<input class="input" type="tel" placeholder="Phone" bind:value=data.phone disabled="{save}">
+				</div>
+			</div>
+			<div class="field">
+				<label class="label">Email</label>
+				<div class="control">
+					<input class="input" type="email" placeholder="Email" bind:value=data.email disabled="{save}">
+				</div>
+			</div>
+			<div class="field">
+				<label class="label">Address</label>
+				<div class="control">
+					<textarea class="input" placeholder="Address" bind:value=data.address disabled="{save}"></textarea>
+				</div>
+			</div>
+			<div class="field">
+				<label class="label">Reference</label>
+				<div class="control">
+					<input class="input" type="text" placeholder="Reference" bind:value=data.reference disabled="{save}">
+				</div>
+			</div>
+			<hr />
+			<div class="field is-grouped">
+				<div class="control">
+					<SubmitButton tracker={tracker} on:submit></SubmitButton>
+				</div>
+				<div class="control">
+					<button class="button is-info" type="Submit" on:click="set({goto_investigation: true})"><i class="fas fa-file-medical-alt"></i>&nbsp;Save and Create Investigation</button>
+				</div>
+				<div class="control">
+					<button class="button is-success" type="Submit" on:click="set({goto_prescription: true})"><i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription</button>
+				</div>
+			</div>
+		{/if}
+		<center class="has-text-danger has-text-weight-bold">{error_message}</center>
+	</form>
+</div>
+
+<script>
+	import Model from "../../../models/patient";
+	import Loader from '../../helpers/loader.html';
+	import SubmitButton from '../../helpers/SubmitButton.html';
+	import { fly } from 'svelte-transitions';
+
+	export default {
+		transitions: { fly },
+		components: {
+			Loader,
+			SubmitButton
+		},
+
+		data() {
+			return {
+				data: {
+					id: "",
+					name: "",
+					age: "",
+					gender: "",
+					phone: "",
+					email: "",
+					address: "",
+					reference: ""
+				},
+				loaded: false,
+				save: false,
+				goto_investigation: false,
+				goto_prescription: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				error_message: ""
+			}
+		},
+		oncreate() {
+			this.load();
+		},
+		methods: {
+			load() {
+				var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
+				locs = locs.split('#');
+
+				Model.getOne(locs[2])
+					.then((e) => {
+						var record = e.data.records;
+						this.set({
+							data: record,
+							loaded: true
+						});
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading patient!"
+						});
+					});
+			},
+			save(e) {
+				e.preventDefault();
+
+				var { data } = this.get();
+
+				this.set({
+					save: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.put(data.id, data)
+					.then((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: true,
+								error: false
+							}
+						});
+
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saved: false
+								},
+							});
+							if (this.get().goto_investigation) {
+								window.location.assign("#investigationhistory#add#p#" + r.data.records.id);
+							}
+							else if (this.get().goto_prescription) {
+								window.location.assign("#prescriptionhistory#add#p#" + r.data.records.id);
+							}
+							else {
+								window.location.assign("#patient");
+							}
+						}, 1500);
+
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							},
+							error_message: "There is an error editing patient!"
+						});
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								},
+								error_message: ""
+							});
+						}, 1500);
+					});
+			}
+		}
+	}
+</script>

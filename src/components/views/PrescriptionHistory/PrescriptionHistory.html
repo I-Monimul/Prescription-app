@@ -1,0 +1,415 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+  <h2 class="title is-2">Prescription History</h2>
+
+  <hr />
+  <br />
+  <h4 class="subtitle is-4">Search by </h4>
+  <div class="field is-horizontal">
+    <div class="field-label is-normal">
+      <label class="label">Patient: </label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        <p class="control is-expanded">
+          <input list="patient_datalist" class="input is-half" type="text" placeholder="Patient"
+            bind:value=search.patient autofocus>
+          <datalist id="patient_datalist">
+            {#each all_patients as each_data}
+              <option value={each_data.name} />
+            {/each}
+          </datalist>
+        </p>
+      </div>
+    </div>
+    <div class="field-label is-normal">
+      <label class="label">Investigation: </label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        <p class="control is-expanded">
+          <input list="investigation_datalist" class="input is-half" type="text" placeholder="Investigation" bind:value=search.investigation>
+          <datalist id="investigation_datalist">
+            {#each all_investigation_history as each_data}
+              <option value={each_data.id} />
+            {/each}
+              <option value="None" />
+          </datalist>
+        </p>
+      </div>
+    </div>
+    <div class="field-label is-normal">
+      <label class="label">Date: </label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        <p class="control is-expanded">
+          <input class="input is-half" type="date" placeholder="Date" bind:value=search.date>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="{table_div}">
+    {#if loaded}
+      <table class="table is-fullwidth" transition:fly="{x: 200, duration: 1000}">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Patient</th>
+            <th>Investigation</th>
+            <th>Date</th>
+            <th>View</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as each_data}
+            {#if (!search.patient || each_data.patient.name.toUpperCase().search(search.patient.toUpperCase())>=0) && (!search.investigation || each_data.investigation_history.id.toString().search(search.investigation)>=0) && (!search.date || each_data.date.search(search.date)>=0)}
+              <tr>
+                <th>{each_data.id}</th>
+                <td>{#if each_data.patient}<b class="has-text-info modal-trigger" on:click="showPatientDetails(each_data.patient)">{each_data.patient.name ? each_data.patient.name : 'None'}</b>{:else}None{/if}</td>
+                <td>{#if each_data.investigation_history}<b class="has-text-info modal-trigger" on:click="showInvestigationDetails(each_data.investigation_history.id)">{each_data.investigation_history.id ? each_data.investigation_history.id : 'None'}</b>{:else}None{/if}</td>
+                <td>{each_data.date ? each_data.date : 'None'}</td>
+                <td><a class="button is-info" on:click="showPrescription(each_data.id)"><i class="fas fa-file-pdf"></i></a></td>
+                <td><a href="#prescriptionhistory#edit#{each_data.id}" class="button is-outlined is-warning"><i class="fas fa-edit"></i></a></td>
+                <td><ConfirmButton context={each_data.id} on:do on:done></ConfirmButton></td>
+              </tr>
+            {/if}
+          {/each}
+        </tbody>
+      </table>
+    {/if}
+  </div>
+  {#if patient_modal}
+  <div class="modal is-active">
+    <div class="modal-background" transition:fly="{duration: 1000}"></div>
+    <div class="modal-card" transition:fly="{y: -200, duration: 1000}">
+      <header class="modal-card-head">
+        <b class="modal-card-title">Patient Details</b>
+        <button class="delete" aria-label="close" on:click="set({patient_modal: false})"></button>
+      </header>
+      <section class="modal-card-body">
+        <p>Name: <span class="title is-5">{data_patient_modal.name}</span></p>
+        <p>Age: <span class="title is-5">{data_patient_modal.age}&nbsp;years</span></p>
+        <p>Gender: <span class="title is-5">{data_patient_modal.gender ? (data_patient_modal.gender=='M' ? 'Male' : (data_patient_modal.gender=='F' ? 'Female' : 'Others')) : 'None'}</span></p>
+        <p>Phone: <span class="title is-5">&nbsp;{data_patient_modal.phone}</span></p>
+        <p>Email: <span class="title is-5">{data_patient_modal.email}</span></p>
+        <p>Address: <span class="title is-5">{data_patient_modal.address}</span></p>
+        <p>Reference: <span class="title is-5">{data_patient_modal.reference}</span></p>
+      </section>
+      <footer class="modal-card-foot">
+        <a class="button is-warning" href="#patient#edit#{data_patient_modal.id}"><i class="fas fa-edit"></i>&nbsp;Edit</a>
+        <a class="button is-info" on:click="set({patient_modal: false})"><i class="fas fa-times"></i>&nbsp;Cancel</a>
+      </footer>
+    </div>
+  </div>
+  {/if}
+  {#if investigation_modal}
+  <div class="modal is-active">
+    <div class="modal-background" transition:fly="{duration: 1000}"></div>
+    <div class="modal-card" transition:fly="{y: -200, duration: 1000}">
+      <header class="modal-card-head">
+        <b class="modal-card-title">Investigation Details</b>
+        <button class="delete" aria-label="close" on:click="set({investigation_modal: false})"></button>
+      </header>
+      <section class="modal-card-body">
+        {#if loaded_investigation_modal}
+          <p class="title is-5">Diagnoses:</p>
+            {#each data_diagnoses_modal as each_data}
+              <p>{each_data.diagnosis}: {each_data.diagnosis_description}</p>
+            {/each}
+          
+          <hr />
+          <p class="title is-5">Complaints:</p>
+            {#each data_complaints_modal as each_data}
+              <p>{each_data.complaint}: {each_data.complaint_description}</p>
+            {/each}
+          
+          <hr />
+          <p class="title is-5">Examinations:</p>
+            {#each data_examinations_modal as each_data}
+            <p>{each_data.examination}: {each_data.examination_description}</p>
+            {/each}
+          
+          <hr />
+          <p class="title is-5">Investigations:</p>
+            {#each data_investigations_modal as each_data}
+              <p>{each_data.investigation}: {each_data.investigation_description}</p>
+            {/each}
+          
+        {/if}
+      {#if !loaded_investigation_modal}
+        <Loader />
+      {/if}
+      <center class="has-text-danger has-text-weight-bold">{error_message_investigation_modal}</center>
+      </section>
+      <footer class="modal-card-foot">
+        <a class="button is-warning" href="#investigationhistory#edit#{data_investigation_modal.id}"><i class="fas fa-edit"></i>&nbsp;Edit</a>
+        <a class="button is-info" on:click="set({investigation_modal: false})"><i class="fas fa-times"></i>&nbsp;Cancel</a>
+      </footer>
+    </div>
+  </div>
+  {/if}
+  {#if prescription_modal}
+  <div class="modal is-active">
+    <div class="modal-background" transition:fly="{duration: 1000}"></div>
+    <div class="modal-card" transition:fly="{y: -200, duration: 1000}" style="width:33%; height:100%">
+      <header class="modal-card-head">
+        <b class="modal-card-title">Prescription ID: {data_prescription_modal_id}</b>
+        <button class="delete" aria-label="close" on:click="set({prescription_modal: false})"></button>
+      </header>
+      <section class="modal-card-body">
+          {#if loaded_prescription_modal}
+          <embed type='application/pdf' src="" style="width:100%; height:98%" id="emb">
+          
+            {/if}
+          {#if !loaded_prescription_modal}
+            <Loader />
+          {/if}
+          <center class="has-text-danger has-text-weight-bold">{error_message_prescription_modal}</center>
+      </section>
+      <footer class="modal-card-foot">
+        <a class="button is-warning" href="#prescriptionhistory#edit#{data_prescription_modal_id}"><i class="fas fa-edit"></i>&nbsp;Edit</a>
+        <a class="button is-info" on:click="set({prescription_modal: false})"><i class="fas fa-times"></i>&nbsp;Cancel</a>
+      </footer>
+    </div>
+  </div>
+  {/if}
+  {#if !loaded}
+    <Loader />
+  {/if}
+  <center class="has-text-danger has-text-weight-bold">{error_message}</center>
+</div>
+
+<script>
+  import Model from "../../../models/prescription_history";
+  import Patient from "../../../models/patient";
+  import InvestigationHistory from "../../../models/investigation_history";
+  import Pdf from "../../../models/pdf";
+  import Loader from '../../helpers/loader.html';
+  import ConfirmButton from '../../helpers/ConfirmButton.html';
+  import { fly } from 'svelte-transitions';
+
+  export default {
+    transitions: { fly },
+    components: {
+      Loader,
+      ConfirmButton
+    },
+    data() {
+      return {
+        data: {},
+        search: {
+          patient: "",
+          investigation: "",
+          date: ""
+        },
+        all_patients: [],
+        all_investigation_history: [],
+        loaded: false,
+        loaded_investigation_modal: false,
+        loaded_prescription_modal: false,
+        error_message: "",
+        error_message_investigation_modal: "",
+        error_message_prescription_modal: "",
+        table_div: "",
+        patient_modal: false,
+        investigation_modal: false,
+        prescription_modal: false,
+        data_patient_modal: {},
+        data_investigation_modal: [],
+        data_prescription_modal_id: "",
+        data_diagnoses_modal: [],
+        data_complaints_modal: [],
+        data_examinations_modal: [],
+        data_investigations_modal: []
+      }
+    },
+    oncreate() {
+      this.load();
+      this.loadPatients();
+      this.loadInvestigationHistory();
+
+      this.on('do', (comp) => {
+        comp.doing();
+        this.delete(comp);
+      });
+
+      this.on('done', () => {
+        this.load();
+      });
+    },
+    methods: {
+      load() {
+        var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
+        locs = locs.split('#');
+        if (locs.length == 2 && locs[1]) {
+          this.showPrescription(locs[1]);
+        }
+
+        Model.getAll()
+          .then((e) => {
+            this.set({ loaded: true });
+            setTimeout(() => {
+              this.set({
+                table_div: "table_div"
+              });
+            }, 1000);
+
+            var record = e.data.records;
+            this.set({ data: record });
+          })
+          .catch((e) => {
+            this.set({
+              loaded: true,
+              error_message: "There is an error loading prescription history!"
+            });
+          });
+      },
+      loadPatients() {
+        Patient.getAll()
+          .then((e) => {
+            var record = e.data.records;
+            this.set({ all_patients: record });
+          })
+          .catch((e) => {
+            this.set({
+              error_message: "There is an error loading patients for search!"
+            });
+          });
+      },
+      loadInvestigationHistory() {
+        InvestigationHistory.getAll()
+          .then((e) => {
+            var record = e.data.records;
+            this.set({ all_investigation_history: record });
+          })
+          .catch((e) => {
+            this.set({
+              error_message: "There is an error loading investigation history for search!"
+            });
+          });
+      },
+      delete(comp) {
+        Model.delete(comp.get().context)
+          .then((e) => {
+            comp.done();
+          })
+          .catch((e) => {
+            comp.error();
+          });
+      },
+      showPatientDetails(patient) {
+        this.set({
+          patient_modal: true,
+          data_patient_modal: patient
+        });
+      },
+      showInvestigationDetails(id) {
+        InvestigationHistory.getOne(id)
+          .then((e) => {
+            this.set({ loaded_investigation_modal: true });
+
+            var investigation = e.data.records;
+
+            var complaints = investigation.complaints.split(','),
+              complaint_descriptions = investigation.complaint_descriptions.split(','),
+              examinations = investigation.examinations.split(','),
+              examination_descriptions = investigation.examination_descriptions.split(','),
+              investigations = investigation.investigations.split(','),
+              investigation_descriptions = [],
+              diagnoses = [],
+              diagnosis_descriptions = [];
+            if (investigation.investigation_descriptions) {
+              investigation_descriptions = investigation.investigation_descriptions.split(',');
+            }
+            else {
+              for (var i = 0; i < investigations.length; i++) {
+                investigation_descriptions[i] = "";
+              }
+            }
+            if (diagnosis.diagnoses) {
+              diagnoses = diagnosis.diagnoses.split(',');
+            }
+            else {
+              for (var i = 0; i < diagnoses.length; i++) {
+                diagnoses[i] = "";
+              }
+            }
+            if (diagnosis.diagnosis_descriptions) {
+              diagnosis_descriptions = diagnosis.diagnosis_descriptions.split(',');
+            }
+            else {
+              for (var i = 0; i < diagnoses.length; i++) {
+                diagnosis_descriptions[i] = "";
+              }
+            }
+            this.set({
+              data_diagnoses_modal: [],
+              data_complaints_modal: [],
+              data_examinations_modal: [],
+              data_investigations_modal: []
+            });
+
+            for (var i = 0; i < diagnoses.length; i++) {
+              this.get().data_diagnoses_modal.push({
+                diagnosis: diagnoses[i],
+                diagnosis_description: diagnosis_descriptions[i]
+              });
+            }
+
+            for (var i = 0; i < complaints.length; i++) {
+              this.get().data_complaints_modal.push({
+                complaint: complaints[i],
+                complaint_description: complaint_descriptions[i]
+              });
+            }
+
+            for (var i = 0; i < examinations.length; i++) {
+              this.get().data_examinations_modal.push({
+                examination: examinations[i],
+                examination_description: examination_descriptions[i]
+              });
+            }
+
+            for (var i = 0; i < investigations.length; i++) {
+              this.get().data_investigations_modal.push({
+                investigation: investigations[i],
+                investigation_description: investigation_descriptions[i]
+              });
+            }
+
+            this.set({
+              investigation_modal: true,
+              data_investigation_modal: investigation
+            });
+          })
+          .catch((e) => {
+            this.set({
+              loaded_investigation_modal: true,
+              error_message_investigation_modal: "There is an error loading investigation history!"
+            });
+          });
+      },
+      showPrescription(id) {
+        Pdf.getPdf('p,' + id)
+          .then((e) => {
+            this.set({
+              prescription_modal: true,
+              loaded_prescription_modal: true,
+              data_prescription_modal_id: id
+            });
+            const blob = new Blob([e.data], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById("emb").setAttribute('src', url);
+          })
+          .catch((e) => {
+            this.set({
+              loaded_prescription_modal: true,
+              error_message_prescription_modal: "There is an error loading prescription history!"
+            });
+          });
+      }
+    }
+  }
+</script>

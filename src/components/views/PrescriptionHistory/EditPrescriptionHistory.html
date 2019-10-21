@@ -1,0 +1,462 @@
+<div class="notification" transition:fly="{y: 200, duration: 1000}">
+	<h2 class="title is-2">Prescription History: Edit-{data.id}
+		<a href="#prescriptionhistory" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;History</a>
+	</h2>
+	<hr />
+	{#if !loaded}
+				<Loader />
+			{/if}
+			{#if loaded}
+			<div transition:fly="{y: -200, duration: 1000}">
+	<p class="title is-5">Patient:</p>
+	<div class="columns">
+		<div class="column is-one-quarter">
+			Name: <b>{data.patient.name}</b>
+		</div>
+		<div class="column is-one-quarter">
+			Age: <b>{data.patient.age}</b>
+		</div>
+		<div class="column is-one-quarter">
+			Address: <b>{data.patient.address}</b>
+		</div>
+		<div class="column is-one-quarter">
+			Reference: <b>{data.patient.reference}</b>
+		</div>
+	</div>
+	<hr style="height: 5px;" />
+</div>
+	<form on:submit="save(event)">
+		<div class="columns">
+				<div class="column is-one-third" transition:fly="{x: -200, duration: 1000}" style="border-right: 5px #dbdbdb solid;">
+					<div class="field">
+						<label class="label">Diagnoses</label>
+						{#each diagnoses as diagnosis, i}
+							<div class="field is-grouped">
+								<div class="control is-expanded">
+									<input list="diagnosis_datalist" class="input" type="text" placeholder="Diagnosis" bind:value=diagnosis.diagnosis disabled="{save}" required autofocus>
+								</div>
+								<div class="control is-expanded">
+									<textarea class="textarea" rows="1" placeholder="Description" bind:value=diagnosis.diagnosis_description disabled="{save}"></textarea>
+								</div>
+								<div class="control">
+									<button type="button" class="button is-danger" on:click="splice('diagnoses', i, 1)"><i class="fas fa-times"></i></button>
+								</div>
+							</div>
+						{/each}
+							<datalist id="diagnosis_datalist">
+								{#each all_diagnoses as diagnosis}
+									<option value="{diagnosis.diagnosis}"/>
+								{/each}
+							</datalist>
+					</div>
+					<div class="field add">
+						<div class="control">
+							<button type="button" class="button is-success" on:click="push('diagnoses', {diagnosis:'',diagnosis_description:''})"><i class="fas fa-plus"></i></button>
+						</div>
+					</div>
+					<hr />
+					<p class="title is-5">Complaints:</p>
+					{#if complaints.length}
+						{#each complaints as each_data}
+							<p>{each_data.complaint}: {each_data.complaint_description}</p>
+						{/each}
+					{:else}
+						<p>None</p>
+					{/if}
+					<hr />
+					<p class="title is-5">Examinations:</p>
+					{#if examinations.length}
+						{#each examinations as each_data}
+						<p>{each_data.examination}: {each_data.examination_description}</p>
+						{/each}
+					{:else}
+						<p>None</p>
+					{/if}
+					<hr />
+					<p class="title is-5">Investigations:</p>
+					{#if investigations.length}
+						{#each investigations as each_data}
+							<div class="field is-grouped">
+								<div class="control is-expanded">
+									{each_data.investigation}:&nbsp;
+								</div>
+								<div class="control is-expanded">
+									<input class="input" type="text" placeholder="Description" bind:value=each_data.investigation_description disabled="{save}" required>
+								</div>
+							</div>
+						{/each}
+					{:else}
+						<p>None</p>
+					{/if}
+				</div>
+			<div class="column is-two-thirds" transition:fly="{x: 200, duration: 1000}">
+				<div class="field">
+					<label class="label">Medicines</label>
+					{#each medicine_details as medicine_detail, i}
+						<div class="field is-grouped">
+							<div class="control is-expanded">
+								<input list="medicine_datalist" class="input" type="text" placeholder="Medicine" bind:value=medicine_detail.medicine disabled="{save}" required autofocus style="text-transform: uppercase;">
+							</div>
+							<div class="control is-expanded">
+								<input list="time_datalist" class="input" type="text" placeholder="Times" bind:value=medicine_detail.time disabled="{save}" required>
+							</div>
+							<div class="control is-expanded">
+								<input list="comment_datalist" class="input" type="text" placeholder="Comments" bind:value=medicine_detail.comment disabled="{save}">
+							</div>
+							<div class="control is-expanded">
+								<input list="duration_datalist" class="input" type="text" placeholder="Duration" bind:value=medicine_detail.duration disabled="{save}" required>
+							</div>
+							<div class="control">
+								<button type="button" class="button is-danger" on:click="splice('medicine_details', i, 1)"><i class="fas fa-times"></i></button>
+							</div>
+						</div>
+					{/each}
+					<datalist id="medicine_datalist">
+						{#each all_medicines as medicine}
+							<option value="{medicine.medicine}">{medicine.generics}</option>
+						{/each}
+					</datalist>
+					<datalist id="time_datalist">
+						{#each all_times as time}
+							<option value="{time.time}"/>
+						{/each}
+					</datalist>
+					<datalist id="comment_datalist">
+						{#each all_comments as comment}
+							<option value="{comment.comment}"/>
+						{/each}
+					</datalist>
+					<datalist id="duration_datalist">
+						{#each all_durations as duration}
+							<option value="{duration.duration}"/>
+						{/each}
+					</datalist>
+				</div>
+				<div class="field add">
+					<div class="control">
+						<button type="button" class="button is-success" on:click="push('medicine_details', {medicine:'',time:'',comment:'',duration:''})"><i class="fas fa-plus"></i></button>
+					</div>
+				</div>
+				<hr />
+				<div class="field is-grouped">
+					<div class="control">
+						<SubmitButton tracker={tracker} on:submit></SubmitButton>
+					</div>
+					<div class="control">
+						<button class="button is-info" type="Submit" on:click="set({preview_prescription: true})"><i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Prescription</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+	{/if}
+	<center class="has-text-danger has-text-weight-bold">{error_message}</center>
+</div>
+
+<script>
+	import Model from "../../../models/prescription_history";
+	import Patient from "../../../models/patient";
+	import InvestigationHistory from "../../../models/investigation_history";
+	import Diagnosis from "../../../models/diagnosis";
+	import Medicine from "../../../models/medicine";
+	import Time from "../../../models/time";
+	import Comment from "../../../models/comment";
+	import Duration from "../../../models/duration";
+	import Loader from '../../helpers/loader.html';
+	import SubmitButton from '../../helpers/SubmitButton.html';
+	import { fly } from 'svelte-transitions';
+	import { push, splice } from 'svelte-extras';
+
+	export default {
+		transitions: { fly },
+		components: {
+			Loader,
+			SubmitButton
+		},
+		oncreate() {
+			this.load();
+		},
+		data() {
+			return {
+				data: {
+					id: "",
+					patient: "",
+					investigation_history: "",
+					investigation_descriptions: "",
+					diagnoses: "",
+					diagnosis_descriptions: "",
+					medicines: "",
+					times: "",
+					comments: "",
+					durations: "",
+					date: ""
+				},
+				history_record: {},
+				diagnoses: [],
+				complaints: [],
+				examinations: [],
+				investigations: [],
+				medicine_details: [],
+				all_diagnoses: [],
+				all_medicines: [],
+				all_times: [],
+				all_comments: [],
+				all_durations: [],
+				loaded: false,
+				save: false,
+				preview_prescription: false,
+				tracker: {
+					saving: false,
+					saved: false,
+					error: false
+				},
+				error_message: ""
+			}
+		},
+		methods: {
+			push,
+			splice,
+			loadHistory(type, history) {
+				if (type == "I") {
+					return InvestigationHistory.getOne(history);
+				}
+				else {
+					return true;
+				}
+			},
+			loadDiagnoses() {
+				return Diagnosis.getAll();
+			},
+			loadMedicines() {
+				return Medicine.getAll();
+			},
+			loadTimes() {
+				return Time.getAll();
+			},
+			loadComments() {
+				return Comment.getAll();
+			},
+			loadDurations() {
+				return Duration.getAll();
+			},
+			load() {
+				var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
+				locs = locs.split('#');
+
+				Model.getOne(locs[2])
+					.then((r) => {
+						var record = r.data.records;
+
+						var medicines = record.medicines.split(','),
+							times = record.times.split(','),
+							comments = record.comments.split(','),
+							durations = record.durations.split(',');
+						for (var i = 0; i < medicines.length; i++) {
+							this.get().medicine_details.push({
+								medicine: medicines[i],
+								time: times[i],
+								comment: comments[i],
+								duration: durations[i]
+							});
+						}
+
+						if (record.investigation_history) {
+							var type = "I",
+								history = record.investigation_history.id;
+						}
+						else {
+							var type = "P",
+								history = record.patient.id;
+						}
+						Promise.all([
+							this.loadHistory(type, history),
+							this.loadDiagnoses(),
+							this.loadMedicines(),
+							this.loadTimes(),
+							this.loadComments(),
+							this.loadDurations()
+						]).then((_r) => {
+							this.set({
+								all_diagnoses: _r[1].data.records,
+								all_medicines: _r[2].data.records,
+								all_times: _r[3].data.records,
+								all_comments: _r[4].data.records,
+								all_durations: _r[5].data.records,
+								data: record
+							});
+
+							if (type == "I") {
+								this.get().history_record = _r[0].data.records;
+								this.get().data.investigation_history = _r[0].data.records;
+
+								var complaints = this.get().history_record.complaints.split(','),
+									complaint_descriptions = this.get().history_record.complaint_descriptions.split(','),
+									examinations = this.get().history_record.examinations.split(','),
+									examination_descriptions = this.get().history_record.examination_descriptions.split(','),
+									investigations = this.get().history_record.investigations.split(','),
+									investigation_descriptions = this.get().history_record.investigation_descriptions.split(','),
+									diagnoses = this.get().history_record.diagnoses.split(','),
+									diagnosis_descriptions = this.get().history_record.diagnosis_descriptions.split(',');;
+
+								if (complaints.length > 1 || (complaints.length == 1 && complaints[0])) {
+									for (var i = 0; i < complaints.length; i++) {
+										this.get().complaints.push({
+											complaint: complaints[i],
+											complaint_description: complaint_descriptions[i]
+										});
+									}
+								}
+
+								if (examinations.length > 1 || (examinations.length == 1 && examinations[0])) {
+									for (var i = 0; i < examinations.length; i++) {
+										this.get().examinations.push({
+											examination: examinations[i],
+											examination_description: examination_descriptions[i]
+										});
+									}
+								}
+
+								if (investigations.length > 1 || (investigations.length == 1 && investigations[0])) {
+									for (var i = 0; i < investigations.length; i++) {
+										this.get().investigations.push({
+											investigation: investigations[i],
+											investigation_description: investigation_descriptions[i]
+										});
+									}
+								}
+
+								for (var i = 0; i < diagnoses.length; i++) {
+									this.get().diagnoses.push({
+										diagnosis: diagnoses[i],
+										diagnosis_description: diagnosis_descriptions[i]
+									});
+								}
+							}
+							else {
+								this.set({
+									complaints: "",
+									examinations: "",
+									investigations: "",
+									diagnoses: ""
+								});
+							}
+
+							this.set({ loaded: true });
+						})
+							.catch((e) => {
+								this.set({
+									error_message: "There is an error loading data!"
+								});
+							});
+					})
+					.catch((e) => {
+						this.set({
+							error_message: "There is an error loading prescription history!"
+						});
+					});
+			},
+			save(e) {
+				e.preventDefault();
+
+				var investigation_descriptions = [],
+					diagnoses = [],
+					diagnosis_descriptions = [],
+					medicines = [],
+					times = [],
+					comments = [],
+					durations = [];
+				if (this.get().investigations) {
+					this.get().investigations.forEach((item, index) => {
+						investigation_descriptions.push(item.investigation_description);
+					});
+					this.get().data.investigation_descriptions = investigation_descriptions.join();
+				}
+				else {
+					this.get().data.investigation_descriptions = "";
+				}
+				if (this.get().diagnoses) {
+					this.get().diagnoses.forEach((item, index) => {
+						diagnoses.push(item.diagnosis);
+						diagnosis_descriptions.push(item.diagnosis_description);
+					});
+					this.get().data.diagnoses = diagnoses.join();
+					this.get().data.diagnosis_descriptions = diagnosis_descriptions.join();
+				}
+				else {
+					this.get().data.diagnosis = "";
+					this.get().data.diagnosis_descriptions = "";
+				}
+				this.get().medicine_details.forEach((item, index) => {
+					medicines.push(item.medicine.toUpperCase());
+					times.push(item.time);
+					comments.push(item.comment);
+					durations.push(item.duration);
+				});
+
+				this.get().data.medicines = medicines.join();
+				this.get().data.times = times.join();
+				this.get().data.comments = comments.join();
+				this.get().data.durations = durations.join();
+
+				var { data } = this.get();
+
+				this.set({
+					save: true,
+					tracker: {
+						saving: true,
+						saved: false,
+						error: false
+					}
+				});
+
+				Model.put(data.id, data)
+					.then((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: true,
+								error: false
+							}
+						});
+
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saved: false
+								},
+							});
+							if (this.get().preview_prescription) {
+								window.location.assign("#prescriptionhistory#" + r.data.records.id);
+							}
+							else {
+								window.location.assign("#prescriptionhistory");
+							}
+						}, 1500);
+
+					})
+					.catch((r) => {
+						this.set({
+							tracker: {
+								saving: false,
+								saved: false,
+								error: true
+							},
+							error_message: "There is an error editing prescription history!"
+						});
+						setTimeout(() => {
+							this.set({
+								save: false,
+								tracker: {
+									saving: false,
+									saved: false,
+									error: false
+								},
+								error_message: ""
+							});
+						}, 1500);
+					});
+			}
+		}
+	}
+</script>
