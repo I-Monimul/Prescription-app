@@ -1,6 +1,6 @@
 <div class="notification" transition:fly="{y: 200, duration: 1000}">
-	<h2 class="title is-2">Medicine: Edit-{data.id}
-		<a href="#medicine" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
+	<h2 class="title is-2">Duration: Edit-{data.id}
+		<a href="#duration" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
 	</h2>
 	<hr />
 	<form on:submit="save(event)">
@@ -9,27 +9,15 @@
 		{/if}
     {#if loaded}
 			<div class="field">
-				<label class="label">Medicine</label>
+				<label class="label">Duration</label>
 				<div class="control">
-					<input class="input" type="text" placeholder="Medicine" bind:value=data.medicine disabled="{save}" required autofocus style="text-transform: uppercase;">
+					<input class="input" type="text" placeholder="Duration" bind:value=data.duration disabled="{save}" required autofocus>
 				</div>
 			</div>
 			<div class="field">
-				<label class="label">Generic</label>
-				{#each generics as generic, i}
-					<div class="field is-grouped">
-						<div class="control is-expanded">
-							<input class="input" type="text" placeholder="Generic" bind:value=generic disabled="{save}" required autofocus style="text-transform: uppercase;">
-						</div>
-						<div class="control">
-						<button type="button" class="button is-danger" on:click="splice('generics', i, 1)"><i class="fas fa-times"></i></button>
-					</div>
-				</div>
-				{/each}
-			</div>
-			<div class="field add">
+				<label class="label">Alternative</label>
 				<div class="control">
-					<button type="button" class="button is-success" on:click="push('generics', '')"><i class="fas fa-plus"></i></button>
+					<input class="input" type="text" placeholder="Alternative" bind:value=data.alternative disabled="{save}" required>
 				</div>
 			</div>
 			<hr />
@@ -38,17 +26,16 @@
 					<SubmitButton tracker={tracker} on:submit></SubmitButton>
 				</div>
 			</div>
-		{/if}
+			{/if}
 		<center class="has-text-danger has-text-weight-bold">{error_message}</center>
 	</form>
 </div>
 
 <script>
-	import Model from "../../../models/medicine";
+	import Model from "../../../models/duration";
 	import Loader from '../../helpers/loader.html';
 	import SubmitButton from '../../helpers/SubmitButton.html';
 	import { fly } from 'svelte-transitions';
-	import { push, splice } from 'svelte-extras';
 
 	export default {
 		transitions: { fly },
@@ -61,10 +48,9 @@
 			return {
 				data: {
 					id: "",
-					medicine: "",
-					generics: ""
+					duration: "",
+					alternative: ""
 				},
-				generics: [""],
 				loaded: false,
 				save: false,
 				tracker: {
@@ -79,8 +65,6 @@
 			this.load();
 		},
 		methods: {
-			push,
-			splice,
 			load() {
 				var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
 				locs = locs.split('#');
@@ -88,9 +72,6 @@
 				Model.getOne(locs[2])
 					.then((e) => {
 						var record = e.data.records;
-						if(record.generics){
-							this.get().generics = record.generics.split(',');
-						}
 						this.set({
 							data: record,
 							loaded: true
@@ -98,15 +79,12 @@
 					})
 					.catch((e) => {
 						this.set({
-							error_message: "There is an error loading medicine!"
+							error_message: "There is an error loading duration!"
 						});
 					});
 			},
 			save(e) {
 				e.preventDefault();
-
-				this.get().data.generics = this.get().generics.join().toUpperCase();
-				this.get().data.medicine = this.get().data.medicine.toUpperCase();
 
 				var { data } = this.get();
 
@@ -136,7 +114,7 @@
 									saved: false
 								},
 							});
-							window.location.assign("#medicine");
+							window.location.assign("#duration");
 						}, 1500);
 
 					})
@@ -147,7 +125,7 @@
 								saved: false,
 								error: true
 							},
-							error_message: "There is an error editing medicine!"
+							error_message: "There is an error editing duration!"
 						});
 						setTimeout(() => {
 							this.set({

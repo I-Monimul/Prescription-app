@@ -109,10 +109,14 @@
 				<SubmitButton tracker={tracker} on:submit></SubmitButton>
 			</div>
 			<div class="control">
-				<button class="button is-info" type="Submit" on:click="set({preview_investigation: true})"><i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Investigation</button>
+				<button class="button is-info" type="Submit" disabled="{save}" on:click="set({preview_investigation: true})">
+					<i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Investigation
+				</button>
 			</div>
 			<div class="control">
-				<button class="button is-success" type="Submit" on:click="set({goto_prescription: true})"><i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription</button>
+				<button class="button is-success" type="Submit" disabled="{save}" on:click="set({goto_prescription: true})">
+					<i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription
+				</button>
 			</div>
 		</div>
 	</form>
@@ -195,25 +199,31 @@
 					.then((r) => {
 						var record = r.data.records;
 
-						var complaints = record.complaints.split(','),
-							complaint_descriptions = record.complaint_descriptions.split(',');
-						for (var i = 0; i < complaints.length; i++) {
-							this.get().complaints.push({
-								complaint: complaints[i],
-								complaint_description: complaint_descriptions[i]
-							});
+						if(record.complaints){
+							var complaints = record.complaints.split(','),
+								complaint_descriptions = record.complaint_descriptions.split(',');
+							for (var i = 0; i < complaints.length; i++) {
+								this.get().complaints.push({
+									complaint: complaints[i],
+									complaint_description: complaint_descriptions[i]
+								});
+							}
 						}
 
-						var examinations = record.examinations.split(','),
-							examination_descriptions = record.examination_descriptions.split(',');
-						for (var i = 0; i < examinations.length; i++) {
-							this.get().examinations.push({
-								examination: examinations[i],
-								examination_description: examination_descriptions[i]
-							});
+						if(record.examinations){
+							var examinations = record.examinations.split(','),
+								examination_descriptions = record.examination_descriptions.split(',');
+							for (var i = 0; i < examinations.length; i++) {
+								this.get().examinations.push({
+									examination: examinations[i],
+									examination_description: examination_descriptions[i]
+								});
+							}
 						}
 
-						this.get().investigations = record.investigations.split(',');
+						if(record.investigations){
+							this.get().investigations = record.investigations.split(',');
+						}
 
 						Promise.all([
 							this.loadPatient(),
@@ -239,7 +249,6 @@
 							});
 					})
 					.catch((e) => {
-						console.log(e);
 						this.set({
 							error_message: "There is an error loading investigation history!"
 						});

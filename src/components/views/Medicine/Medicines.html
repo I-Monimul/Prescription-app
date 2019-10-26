@@ -14,7 +14,7 @@
       <div class="field">
         <p class="control is-expanded">
           <input list="medicine_datalist" class="input is-half" type="text" placeholder="Medicine"
-            bind:value=search.medicine style="text-transform: uppercase;">
+            bind:value=search.medicine autofocus style="text-transform: uppercase;">
           <datalist id="medicine_datalist">
             {#each data as each_data}
                 <option value={each_data.medicine} />
@@ -32,8 +32,11 @@
             <input list="generic_datalist" class="input is-half" type="text" placeholder="Generics" bind:value=search.generics style="text-transform: uppercase;">
             <datalist id="generic_datalist">
                 {#each data as each_data}
+                  {#if each_data.generics}
                   <option value={each_data.generics} />
+                  {/if}
                 {/each}
+                <option value="None" />
             </datalist>
           </p>
         </div>
@@ -53,7 +56,9 @@
           </thead>
           <tbody>
               {#each data as each_data}
-                {#if (!search.medicine || each_data.medicine.toUpperCase().search(search.medicine.toUpperCase())>=0) && (!search.generics || each_data.generics.toUpperCase().search(search.generics.toUpperCase())>=0)}
+                {#if (!search.medicine || each_data.medicine.toUpperCase().search(search.medicine.toUpperCase())>=0)
+                  && (!search.generics || (each_data.generics && each_data.generics.toUpperCase().search(search.generics.toUpperCase())>=0)
+                  || (!each_data.generics && search.generics.toUpperCase()=="NONE"))}
                   <tr>
                     <th>{each_data.id}</th>
                     <td>{each_data.medicine ? each_data.medicine : 'None'}</td>

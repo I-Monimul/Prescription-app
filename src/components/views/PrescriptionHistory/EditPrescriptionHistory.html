@@ -113,22 +113,22 @@
 					{/each}
 					<datalist id="medicine_datalist">
 						{#each all_medicines as medicine}
-							<option value="{medicine.medicine}">{medicine.generics}</option>
+							<option value="{medicine.medicine}">{medicine.generics ? medicine.generics : 'None'}</option>
 						{/each}
 					</datalist>
 					<datalist id="time_datalist">
 						{#each all_times as time}
-							<option value="{time.time}"/>
+							<option value="{time.time}">{time.alternative ? time.alternative : 'None'}</option>
 						{/each}
 					</datalist>
 					<datalist id="comment_datalist">
 						{#each all_comments as comment}
-							<option value="{comment.comment}"/>
+							<option value="{comment.comment}">{comment.alternative ? comment.alternative : 'None'}</option>
 						{/each}
 					</datalist>
 					<datalist id="duration_datalist">
 						{#each all_durations as duration}
-							<option value="{duration.duration}"/>
+							<option value="{duration.duration}">{duration.alternative ? duration.alternative : 'None'}</option>
 						{/each}
 					</datalist>
 				</div>
@@ -137,13 +137,65 @@
 						<button type="button" class="button is-success" on:click="push('medicine_details', {medicine:'',time:'',comment:'',duration:''})"><i class="fas fa-plus"></i></button>
 					</div>
 				</div>
-				<hr />
+				<hr style="height: 5px;" />
+				<div class="field">
+					<label class="label">Advices</label>
+					{#each advices as advice, i}
+						<div class="field is-grouped">
+							<div class="control is-expanded">
+								<input list="advice_datalist" class="input" type="text" placeholder="Advice" bind:value=advice disabled="{save}" required>
+							</div>
+							<div class="control">
+								<button type="button" class="button is-danger" on:click="splice('advices', i, 1)"><i class="fas fa-times"></i></button>
+							</div>
+						</div>
+					{/each}
+					<datalist id="advice_datalist">
+						{#each all_advices as advice}
+							<option value="{advice.advice}">{advice.alternative ? advice.alternative : 'None'}</option>
+						{/each}
+					</datalist>
+				</div>
+				<div class="field add">
+					<div class="control">
+						<button type="button" class="button is-success" on:click="push('advices', '')"><i class="fas fa-plus"></i></button>
+					</div>
+				</div>
+				<div class="field">
+					<label class="label">Next Visit</label>
+					<div class="field is-grouped">
+						<div class="control is-expanded">
+							<input list="next_visit_datalist" class="input" type="text" placeholder="Next Visit" bind:value=data.next_visit disabled="{save}">
+						</div>
+					</div>
+					<datalist id="next_visit_datalist">
+						{#each all_next_visits as next_visit}
+							<option value="{next_visit.next_visit}">{next_visit.alternative ? next_visit.alternative : 'None'}</option>
+						{/each}
+					</datalist>
+				</div>
+				<div class="field">
+					<label class="label">Referred to</label>
+					<div class="field is-grouped">
+						<div class="control is-expanded">
+							<input list="referee_datalist" class="input" type="text" placeholder="Referred to" bind:value=data.referee disabled="{save}">
+						</div>
+					</div>
+					<datalist id="referee_datalist">
+						{#each all_referees as referee}
+							<option value="{referee.referee}"/>
+						{/each}
+					</datalist>
+				</div>
+				<hr style="height: 5px;" />
 				<div class="field is-grouped">
 					<div class="control">
 						<SubmitButton tracker={tracker} on:submit></SubmitButton>
 					</div>
 					<div class="control">
-						<button class="button is-info" type="Submit" on:click="set({preview_prescription: true})"><i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Prescription</button>
+						<button class="button is-info" type="Submit" disabled="{save}" on:click="set({preview_prescription: true})">
+							<i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Prescription
+						</button>
 					</div>
 				</div>
 			</div>
@@ -162,6 +214,9 @@
 	import Time from "../../../models/time";
 	import Comment from "../../../models/comment";
 	import Duration from "../../../models/duration";
+	import Advice from "../../../models/advice";
+	import NextVisit from "../../../models/next_visit";
+	import Referee from "../../../models/referee";
 	import Loader from '../../helpers/loader.html';
 	import SubmitButton from '../../helpers/SubmitButton.html';
 	import { fly } from 'svelte-transitions';
@@ -189,6 +244,9 @@
 					times: "",
 					comments: "",
 					durations: "",
+					advices: "",
+					next_visit: "",
+					referee: "",
 					date: ""
 				},
 				history_record: {},
@@ -197,11 +255,15 @@
 				examinations: [],
 				investigations: [],
 				medicine_details: [],
+				advices: [],
 				all_diagnoses: [],
 				all_medicines: [],
 				all_times: [],
 				all_comments: [],
 				all_durations: [],
+				all_advices: [],
+				all_next_visits: [],
+				all_referees: [],
 				loaded: false,
 				save: false,
 				preview_prescription: false,
@@ -239,6 +301,15 @@
 			loadDurations() {
 				return Duration.getAll();
 			},
+			loadAdvices() {
+				return Advice.getAll();
+			},
+			loadNextVisits() {
+				return NextVisit.getAll();
+			},
+			loadReferees() {
+				return Referee.getAll();
+			},
 			load() {
 				var locs = window.location.href.toString().split(window.location.host)[1].split('/#')[1];
 				locs = locs.split('#');
@@ -259,6 +330,10 @@
 								duration: durations[i]
 							});
 						}
+						
+						if(record.advices){
+							this.get().advices = record.advices.split(',');
+						}
 
 						if (record.investigation_history) {
 							var type = "I",
@@ -274,7 +349,10 @@
 							this.loadMedicines(),
 							this.loadTimes(),
 							this.loadComments(),
-							this.loadDurations()
+							this.loadDurations(),
+							this.loadAdvices(),
+							this.loadNextVisits(),
+							this.loadReferees()
 						]).then((_r) => {
 							this.set({
 								all_diagnoses: _r[1].data.records,
@@ -282,6 +360,9 @@
 								all_times: _r[3].data.records,
 								all_comments: _r[4].data.records,
 								all_durations: _r[5].data.records,
+								all_advices: _r[6].data.records,
+								all_next_visits: _r[7].data.records,
+								all_referees: _r[8].data.records,
 								data: record
 							});
 
@@ -289,16 +370,9 @@
 								this.get().history_record = _r[0].data.records;
 								this.get().data.investigation_history = _r[0].data.records;
 
-								var complaints = this.get().history_record.complaints.split(','),
-									complaint_descriptions = this.get().history_record.complaint_descriptions.split(','),
-									examinations = this.get().history_record.examinations.split(','),
-									examination_descriptions = this.get().history_record.examination_descriptions.split(','),
-									investigations = this.get().history_record.investigations.split(','),
-									investigation_descriptions = this.get().history_record.investigation_descriptions.split(','),
-									diagnoses = this.get().history_record.diagnoses.split(','),
-									diagnosis_descriptions = this.get().history_record.diagnosis_descriptions.split(',');;
-
-								if (complaints.length > 1 || (complaints.length == 1 && complaints[0])) {
+								if(this.get().history_record.complaints){
+									var complaints = this.get().history_record.complaints.split(','),
+											complaint_descriptions = this.get().history_record.complaint_descriptions.split(',');
 									for (var i = 0; i < complaints.length; i++) {
 										this.get().complaints.push({
 											complaint: complaints[i],
@@ -306,8 +380,9 @@
 										});
 									}
 								}
-
-								if (examinations.length > 1 || (examinations.length == 1 && examinations[0])) {
+								if(this.get().history_record.examinations){
+									var examinations = this.get().history_record.examinations.split(','),
+											examination_descriptions = this.get().history_record.examination_descriptions.split(',');
 									for (var i = 0; i < examinations.length; i++) {
 										this.get().examinations.push({
 											examination: examinations[i],
@@ -315,8 +390,17 @@
 										});
 									}
 								}
-
-								if (investigations.length > 1 || (investigations.length == 1 && investigations[0])) {
+								if(this.get().history_record.investigations){
+									var investigations = this.get().history_record.investigations.split(','),
+										investigation_descriptions = [];
+									if (this.get().history_record.investigation_descriptions) {
+										investigation_descriptions = this.get().history_record.investigation_descriptions.split(',');
+									}
+									else {
+										for (var i = 0; i < investigations.length; i++) {
+											investigation_descriptions[i] = "";
+										}
+									}
 									for (var i = 0; i < investigations.length; i++) {
 										this.get().investigations.push({
 											investigation: investigations[i],
@@ -324,20 +408,33 @@
 										});
 									}
 								}
-
-								for (var i = 0; i < diagnoses.length; i++) {
-									this.get().diagnoses.push({
-										diagnosis: diagnoses[i],
-										diagnosis_description: diagnosis_descriptions[i]
-									});
-								}
+								if(this.get().history_record.diagnoses){
+									var diagnoses = this.get().history_record.diagnoses.split(','),
+											diagnosis_descriptions = this.get().history_record.diagnosis_descriptions.split(',');
+									for (var i = 0; i < diagnoses.length; i++) {
+										this.get().diagnoses.push({
+											diagnosis: diagnoses[i],
+											diagnosis_description: diagnosis_descriptions[i]
+										});
+									}
+								}	
 							}
 							else {
+								if(this.get().data.diagnoses){
+									var diagnoses = this.get().data.diagnoses.split(','),
+											diagnosis_descriptions = this.get().data.diagnosis_descriptions.split(',');
+									for (var i = 0; i < diagnoses.length; i++) {
+										this.get().diagnoses.push({
+											diagnosis: diagnoses[i],
+											diagnosis_description: diagnosis_descriptions[i]
+										});
+									}
+								}
+
 								this.set({
 									complaints: "",
 									examinations: "",
-									investigations: "",
-									diagnoses: ""
+									investigations: ""
 								});
 							}
 
@@ -397,6 +494,8 @@
 				this.get().data.times = times.join();
 				this.get().data.comments = comments.join();
 				this.get().data.durations = durations.join();
+				
+				this.get().data.advices = this.get().advices.join();
 
 				var { data } = this.get();
 

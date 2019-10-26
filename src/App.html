@@ -90,6 +90,12 @@
 
           if (locs.length == 1) {
             if (locs[0] == 'medicine'
+                  || locs[0] == 'time'
+                  || locs[0] == 'comment'
+                  || locs[0] == 'duration'
+                  || locs[0] == 'advice'
+                  || locs[0] == 'nextvisit'
+                  || locs[0] == 'referee'
                   || locs[0] == 'patient'
                   || locs[0] == 'diagnosis'
                   || locs[0] == 'complaint'
@@ -107,6 +113,12 @@
           else if (locs.length == 2) {
             if (locs[1] == 'add'
                   && (locs[0] == 'medicine'
+                  || locs[0] == 'time'
+                  || locs[0] == 'comment'
+                  || locs[0] == 'duration'
+                  || locs[0] == 'advice'
+                  || locs[0] == 'nextvisit'
+                  || locs[0] == 'referee'
                   || locs[0] == 'patient'
                   || locs[0] == 'diagnosis'
                   || locs[0] == 'complaint'
@@ -131,6 +143,12 @@
             if (Number.isInteger(parseInt(locs[2]))
                   && locs[1] == 'edit'
                   && (locs[0] == 'medicine'
+                  || locs[0] == 'time'
+                  || locs[0] == 'comment'
+                  || locs[0] == 'duration'
+                  || locs[0] == 'advice'
+                  || locs[0] == 'nextvisit'
+                  || locs[0] == 'referee'
                   || locs[0] == 'patient'
                   || locs[0] == 'diagnosis'
                   || locs[0] == 'complaint'

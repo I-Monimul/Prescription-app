@@ -13,7 +13,7 @@
     <div class="field-body">
       <div class="field">
         <p class="control is-expanded">
-          <input list="name_datalist" class="input is-half" type="text" placeholder="Name" bind:value=search.name>
+          <input list="name_datalist" class="input is-half" type="text" placeholder="Name" bind:value=search.name autofocus>
           <datalist id="name_datalist">
             {#each data as each_data}
                 <option value={each_data.name} />

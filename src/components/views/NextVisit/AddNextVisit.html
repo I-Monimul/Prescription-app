@@ -1,14 +1,19 @@
 <div class="notification" transition:fly="{y: 200, duration: 1000}">
-	<h2 class="title is-2">Examination: Add
-		<a href="#examination" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
+	<h2 class="title is-2">Next Visit: Add
+		<a href="#nextvisit" class="button is-info is-pulled-right"><i class="fas fa-list"></i>&nbsp;List</a>
 	</h2>
 	<hr />
 	<form on:submit="save(event)">
 		<div class="field">
-			<label class="label">Examination</label>
+			<label class="label">Next Visit</label>
 			<div class="control">
-				<input class="input" type="text" placeholder="Examination" bind:value=data.examination disabled="{save}"
-					required autofocus>
+				<input class="input" type="text" placeholder="Next Visit" bind:value=data.next_visit disabled="{save}" required autofocus>
+			</div>
+		</div>
+		<div class="field">
+			<label class="label">Alternative</label>
+			<div class="control">
+				<input class="input" type="text" placeholder="Alternative" bind:value=data.alternative disabled="{save}" required>
 			</div>
 		</div>
 		<hr />
@@ -22,7 +27,7 @@
 </div>
 
 <script>
-	import Model from "../../../models/examination";
+	import Model from "../../../models/next_visit";
 	import Loader from '../../helpers/loader.html';
 	import SubmitButton from '../../helpers/SubmitButton.html';
 	import { fly } from 'svelte-transitions';
@@ -37,7 +42,8 @@
 		data() {
 			return {
 				data: {
-					examination: "",
+					next_visit: "",
+					alternative: ""
 				},
 				save: false,
 				tracker: {
@@ -80,7 +86,7 @@
 									saved: false
 								},
 							});
-							window.location.assign("#examination");
+							window.location.assign("#nextvisit");
 						}, 1500);
 
 					})
@@ -91,7 +97,7 @@
 								saved: false,
 								error: true
 							},
-							error_message: "There is an error adding examination!"
+							error_message: "There is an error adding next visit data!"
 						});
 						setTimeout(() => {
 							this.set({

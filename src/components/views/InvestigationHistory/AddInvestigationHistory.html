@@ -109,10 +109,14 @@
 				<SubmitButton tracker={tracker} on:submit></SubmitButton>
 			</div>
 			<div class="control">
-				<button class="button is-info" type="Submit" on:click="set({preview_investigation: true})"><i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Investigation</button>
+				<button class="button is-info" type="Submit" disabled="{save}" on:click="set({preview_investigation: true})">
+					<i class="fas fa-file-pdf"></i>&nbsp;Save and Preview Investigation
+				</button>
 			</div>
 			<div class="control">
-				<button class="button is-success" type="Submit" on:click="set({goto_prescription: true})"><i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription</button>
+				<button class="button is-success" type="Submit" disabled="{save}" on:click="set({goto_prescription: true})">
+					<i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription
+				</button>
 			</div>
 		</div>
 	</form>

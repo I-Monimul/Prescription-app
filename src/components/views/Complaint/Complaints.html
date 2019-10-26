@@ -14,7 +14,7 @@
       <div class="field">
         <p class="control is-expanded">
           <input list="complaint_datalist" class="input is-half" type="text" placeholder="Complaint"
-            bind:value=search.complaint>
+            bind:value=search.complaint autofocus>
           <datalist id="complaint_datalist">
             {#each data as each_data}
                 <option value={each_data.complaint} />

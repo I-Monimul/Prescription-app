@@ -2,6 +2,40 @@
   <h2 class="title is-2">Prescription History</h2>
 
   <hr />
+  <h5 class="title is-5">
+    <center>
+      <div class="columns">
+        <div class="column" style="border-right: 5px #dbdbdb solid;">
+          <span style="vertical-align: middle;">Go to >></span>
+        </div>
+        <div class="column">
+          <a href="#medicine" class="button is-info">Medicine</a>
+        </div>
+        <div class="column">
+          <a href="#time" class="button is-info">Time</a>
+        </div>
+        <div class="column">
+          <a href="#comment" class="button is-info">Comment</a>
+        </div>
+        <div class="column" style="border-right: 5px #dbdbdb solid;">
+          <a href="#duration" class="button is-info">Duration</a>
+        </div>
+        <div class="column">
+          <a href="#advice" class="button is-info">Advice</a>
+        </div>
+        <div class="column">
+          <a href="#nextvisit" class="button is-info">Next Visit</a>
+        </div>
+        <div class="column" style="border-right: 5px #dbdbdb solid;">
+          <a href="#referee" class="button is-info">Referee</a>
+        </div>
+        <div class="column">
+          <a href="#diagnosis" class="button is-info">Diagnosis</a>
+        </div>
+      </div>
+    </center>
+  </h5>
+  <hr />
   <br />
   <h4 class="subtitle is-4">Search by </h4>
   <div class="field is-horizontal">
@@ -115,28 +149,40 @@
       <section class="modal-card-body">
         {#if loaded_investigation_modal}
           <p class="title is-5">Diagnoses:</p>
+          {#if data_diagnoses_modal.length}
             {#each data_diagnoses_modal as each_data}
-              <p>{each_data.diagnosis}: {each_data.diagnosis_description}</p>
+              <p>{each_data.diagnosis}{each_data.diagnosis_description ? ': ' + each_data.diagnosis_description : ''}</p>
             {/each}
-          
+          {:else}
+            <p>None</p>
+          {/if}
           <hr />
           <p class="title is-5">Complaints:</p>
+          {#if data_complaints_modal.length}
             {#each data_complaints_modal as each_data}
-              <p>{each_data.complaint}: {each_data.complaint_description}</p>
+              <p>{each_data.complaint}{each_data.complaint_description ? ': ' + each_data.complaint_description : ''}</p>
             {/each}
-          
+          {:else}
+            <p>None</p>
+          {/if}
           <hr />
           <p class="title is-5">Examinations:</p>
+          {#if data_examinations_modal.length}
             {#each data_examinations_modal as each_data}
-            <p>{each_data.examination}: {each_data.examination_description}</p>
+            <p>{each_data.examination}{each_data.examination_description ? ': ' + each_data.examination_description : ''}</p>
             {/each}
-          
+          {:else}
+            <p>None</p>
+          {/if}
           <hr />
           <p class="title is-5">Investigations:</p>
+          {#if data_investigations_modal.length}
             {#each data_investigations_modal as each_data}
-              <p>{each_data.investigation}: {each_data.investigation_description}</p>
+              <p>{each_data.investigation}{each_data.investigation_description ? ': ' + each_data.investigation_description : ''}</p>
             {/each}
-          
+          {:else}
+            <p>None</p>
+          {/if}
         {/if}
       {#if !loaded_investigation_modal}
         <Loader />
@@ -153,16 +199,15 @@
   {#if prescription_modal}
   <div class="modal is-active">
     <div class="modal-background" transition:fly="{duration: 1000}"></div>
-    <div class="modal-card" transition:fly="{y: -200, duration: 1000}" style="width:33%; height:100%">
+    <div class="modal-card" transition:fly="{y: -200, duration: 1000}" style="width:50%; height:100%">
       <header class="modal-card-head">
         <b class="modal-card-title">Prescription ID: {data_prescription_modal_id}</b>
         <button class="delete" aria-label="close" on:click="set({prescription_modal: false})"></button>
       </header>
       <section class="modal-card-body">
           {#if loaded_prescription_modal}
-          <embed type='application/pdf' src="" style="width:100%; height:98%" id="emb">
-          
-            {/if}
+            <embed type='application/pdf' src="" style="width:100%; height:98%" id="emb">
+          {/if}
           {#if !loaded_prescription_modal}
             <Loader />
           {/if}
@@ -310,40 +355,8 @@
           .then((e) => {
             this.set({ loaded_investigation_modal: true });
 
-            var investigation = e.data.records;
+            var investigation = e.data.records;console.log(investigation);
 
-            var complaints = investigation.complaints.split(','),
-              complaint_descriptions = investigation.complaint_descriptions.split(','),
-              examinations = investigation.examinations.split(','),
-              examination_descriptions = investigation.examination_descriptions.split(','),
-              investigations = investigation.investigations.split(','),
-              investigation_descriptions = [],
-              diagnoses = [],
-              diagnosis_descriptions = [];
-            if (investigation.investigation_descriptions) {
-              investigation_descriptions = investigation.investigation_descriptions.split(',');
-            }
-            else {
-              for (var i = 0; i < investigations.length; i++) {
-                investigation_descriptions[i] = "";
-              }
-            }
-            if (diagnosis.diagnoses) {
-              diagnoses = diagnosis.diagnoses.split(',');
-            }
-            else {
-              for (var i = 0; i < diagnoses.length; i++) {
-                diagnoses[i] = "";
-              }
-            }
-            if (diagnosis.diagnosis_descriptions) {
-              diagnosis_descriptions = diagnosis.diagnosis_descriptions.split(',');
-            }
-            else {
-              for (var i = 0; i < diagnoses.length; i++) {
-                diagnosis_descriptions[i] = "";
-              }
-            }
             this.set({
               data_diagnoses_modal: [],
               data_complaints_modal: [],
@@ -351,32 +364,62 @@
               data_investigations_modal: []
             });
 
-            for (var i = 0; i < diagnoses.length; i++) {
-              this.get().data_diagnoses_modal.push({
-                diagnosis: diagnoses[i],
-                diagnosis_description: diagnosis_descriptions[i]
-              });
+            if (investigation.complaints) {
+              var complaints = investigation.complaints.split(','),
+                complaint_descriptions = investigation.complaint_descriptions.split(',');
+              for (var i = 0; i < complaints.length; i++) {
+                this.get().data_complaints_modal.push({
+                  complaint: complaints[i],
+                  complaint_description: complaint_descriptions[i]
+                });
+              }
             }
-
-            for (var i = 0; i < complaints.length; i++) {
-              this.get().data_complaints_modal.push({
-                complaint: complaints[i],
-                complaint_description: complaint_descriptions[i]
-              });
+            if (investigation.examinations) {
+              var examinations = investigation.examinations.split(','),
+                examination_descriptions = investigation.examination_descriptions.split(',');
+              for (var i = 0; i < examinations.length; i++) {
+                this.get().data_examinations_modal.push({
+                  examination: examinations[i],
+                  examination_description: examination_descriptions[i]
+                });
+              }
             }
-
-            for (var i = 0; i < examinations.length; i++) {
-              this.get().data_examinations_modal.push({
-                examination: examinations[i],
-                examination_description: examination_descriptions[i]
-              });
+            if (investigation.investigations) {
+              var investigations = investigation.investigations.split(','),
+                investigation_descriptions = [];
+              if (investigation.investigation_descriptions) {
+                investigation_descriptions = investigation.investigation_descriptions.split(',');
+              }
+              else {
+                for (var i = 0; i < investigations.length; i++) {
+                  investigation_descriptions[i] = "";
+                }
+              }
+              for (var i = 0; i < investigations.length; i++) {
+                this.get().data_investigations_modal.push({
+                  investigation: investigations[i],
+                  investigation_description: investigation_descriptions[i]
+                });
+              }
             }
-
-            for (var i = 0; i < investigations.length; i++) {
-              this.get().data_investigations_modal.push({
-                investigation: investigations[i],
-                investigation_description: investigation_descriptions[i]
-              });
+            if (investigation.diagnoses) {
+              var diagnoses = [],
+                diagnosis_descriptions = [];
+              diagnoses = investigation.diagnoses.split(',');
+              if (investigation.diagnosis_descriptions) {
+                diagnosis_descriptions = investigation.diagnosis_descriptions.split(',');
+              }
+              else {
+                for (var i = 0; i < diagnoses.length; i++) {
+                  diagnosis_descriptions[i] = "";
+                }
+              }
+              for (var i = 0; i < diagnoses.length; i++) {
+                this.get().data_diagnoses_modal.push({
+                  diagnosis: diagnoses[i],
+                  diagnosis_description: diagnosis_descriptions[i]
+                });
+              }
             }
 
             this.set({

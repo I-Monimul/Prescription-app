@@ -14,7 +14,7 @@
       <div class="field">
         <p class="control is-expanded">
           <input list="diagnosis_datalist" class="input is-half" type="text" placeholder="Diagnosis"
-            bind:value=search.diagnosis>
+            bind:value=search.diagnosis autofocus>
           <datalist id="diagnosis_datalist">
             {#each data as each_data}
                 <option value={each_data.diagnosis} />

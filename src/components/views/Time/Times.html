@@ -1,6 +1,6 @@
 <div class="notification" transition:fly="{y: 200, duration: 1000}">
-  <h2 class="title is-2">Investigation: List
-    <a href="#investigation#add" class="button is-info is-pulled-right"><i class="fas fa-plus"></i>&nbsp;Add</a>
+  <h2 class="title is-2">Time: List
+    <a href="#time#add" class="button is-info is-pulled-right"><i class="fas fa-plus"></i>&nbsp;Add</a>
   </h2>
 
   <hr />
@@ -8,21 +8,40 @@
   <h4 class="subtitle is-4">Search by </h4>
   <div class="field is-horizontal">
     <div class="field-label is-normal">
-      <label class="label">Investigation: </label>
+      <label class="label">Time: </label>
     </div>
     <div class="field-body">
       <div class="field">
         <p class="control is-expanded">
-          <input list="investigation_datalist" class="input is-half" type="text" placeholder="Investigation"
-            bind:value=search.investigation autofocus>
-          <datalist id="investigation_datalist">
+          <input list="time_datalist" class="input is-half" type="text" placeholder="Time"
+            bind:value=search.time autofocus>
+          <datalist id="time_datalist">
             {#each data as each_data}
-                <option value={each_data.investigation} />
+                <option value={each_data.time} />
               {/each}
             </datalist>
           </p>
         </div>
       </div>
+      <div class="field-label is-normal">
+        <label class="label">Alternative: </label>
+      </div>
+      <div class="field-body">
+        <div class="field">
+          <p class="control is-expanded">
+            <input list="alternative_datalist" class="input is-half" type="text" placeholder="Alternative"
+              bind:value=search.alternative>
+            <datalist id="alternative_datalist">
+              {#each data as each_data}
+                {#if each_data.alternative}
+                  <option value={each_data.alternative} />
+                {/if}
+              {/each}
+              <option value="None" />
+              </datalist>
+            </p>
+          </div>
+        </div>
     </div>
     <div class="{table_div}">
       {#if loaded}
@@ -30,18 +49,22 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Investigation</th>
+              <th>Time</th>
+              <th>Alternative</th>
               <th>Edit</th>
               <th>Delete</th>
             </tr>
           </thead>
           <tbody>
               {#each data as each_data}
-                {#if !search.investigation || each_data.investigation.toUpperCase().search(search.investigation.toUpperCase())>=0}
+                {#if (!search.time || each_data.time.toUpperCase().search(search.time.toUpperCase())>=0)
+                  && (!search.alternative || (each_data.alternative && each_data.alternative.toUpperCase().search(search.alternative.toUpperCase())>=0)
+                  || (!each_data.alternative && search.alternative.toUpperCase()=="NONE"))}
                   <tr>
                     <th>{each_data.id}</th>
-                    <td>{each_data.investigation ? each_data.investigation : 'None'}</td>
-                    <td><a href="#investigation#edit#{each_data.id}" class="button is-outlined is-warning"><i class="fas fa-edit"></i></a></td>
+                    <td>{each_data.time ? each_data.time : 'None'}</td>
+                    <td>{each_data.alternative ? each_data.alternative : 'None'}</td>
+                    <td><a href="#time#edit#{each_data.id}" class="button is-outlined is-warning"><i class="fas fa-edit"></i></a></td>
                     <td><ConfirmButton context={each_data.id} on:do on:done></ConfirmButton></td>
                   </tr>
                 {/if}
@@ -56,7 +79,7 @@
     <center class="has-text-danger has-text-weight-bold">{error_message}</center>
   </div>
 <script>
-  import Model from "../../../models/investigation";
+  import Model from "../../../models/time";
   import Loader from '../../helpers/loader.html';
   import ConfirmButton from '../../helpers/ConfirmButton.html';
   import { fly } from 'svelte-transitions';
@@ -71,12 +94,14 @@
       return {
         data: {
           id: "",
-          investigation: ""
+          time: "",
+          alternative: ""
         },
         loaded: false,
         error_message: "",
         search: {
-          investigation: ""
+          time: "",
+          alternative: ""
         },
         table_div: ""
       }
@@ -110,7 +135,7 @@
           .catch((e) => {
             this.set({
               loaded: true,
-              error_message: "There is an error loading investigations!"
+              error_message: "There is an error loading times!"
             });
           });
       },

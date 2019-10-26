@@ -2,7 +2,7 @@
 <nav class="navbar is-fixed-top has-background-primary" role="navigation" aria-label="main navigation"
   transition:fly="{y: -200, duration: 1000}">
   <div class="navbar-brand">
-    <div class="navbar-item {menu_now=='dashboard' ? 'menu-active' : 'menu-inactive'}"
+    <div class="navbar-item {menu_active=='dashboard' ? 'menu-active' : 'menu-inactive'}"
       on:click="menuChange('dashboard')">
       <img src="images/1200px-Rx_symbol_border.svg.png" style="min-width:80px;min-height:80px;" alt="logo">
     </div>
@@ -18,7 +18,7 @@
   <div id="navbarBasicExample" class="navbar-menu has-background-primary is-paddingless {open ? 'is-active' : ''}">
     <div class="navbar-start has-background-primary">
       {#each data as menu}
-        <div class="navbar-item {menu_now==menu.value ? 'menu-active' : 'menu-inactive'}" on:click="menuChange(menu.value)">
+        <div class="navbar-item {menu_active==menu.value ? 'menu-active' : 'menu-inactive'}" on:click="menuChange(menu.value)">
           {menu.name}
         </div>
       {/each}
@@ -31,7 +31,6 @@
   </div>
 </nav>
 {/if}
-  
 <script>
 	import { fly } from 'svelte-transitions';
 
@@ -44,17 +43,38 @@
 			return {
 				data: [
 					{ name: "Patient", value: "patient" },
-					{ name: "Investigation History", value: "investigationhistory" },
-					{ name: "Prescription History", value: "prescriptionhistory" },
-					{ name: "Medicine", value: "medicine" },
-					{ name: "Diagnosis", value: "diagnosis" },
-					{ name: "Complaint", value: "complaint" },
-					{ name: "Examination", value: "examination" },
-					{ name: "Investigation", value: "investigation" }
+					{ name: "Investigation", value: "investigationhistory" },
+					{ name: "Prescription", value: "prescriptionhistory" }
 				],
 				menu_now: {},
 				open: false,
 				logging_out: false
+			}
+		},
+		computed: {
+			menu_active({ menu_now }) {
+				if(menu_now == 'investigationhistory'
+				|| menu_now == 'complaint'
+				|| menu_now == 'examination'
+				|| menu_now == 'investigation')
+				{
+					return "investigationhistory";
+				}
+				else if(menu_now == 'prescriptionhistory'
+				|| menu_now == 'medicine'
+				|| menu_now == 'time'
+				|| menu_now == 'comment'
+				|| menu_now == 'duration'
+				|| menu_now == 'advice'
+				|| menu_now == 'nextvisit'
+				|| menu_now == 'referee'
+				|| menu_now == "diagnosis")
+				{
+					return "prescriptionhistory";
+				}
+				else{
+					return menu_now;
+				}
 			}
 		},
 		methods: {

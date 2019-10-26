@@ -7,7 +7,7 @@
 		<div class="field">
 			<label class="label">Name</label>
 			<div class="control">
-				<input class="input" type="text" placeholder="Name" bind:value=data.name disabled="{save}" required
+				<input class="input" type="text" placeholder="Name" bind:value=data.name disabled="{save}" required autofocus
 					style="text-transform: capitalize;">
 			</div>
 		</div>
@@ -70,12 +70,14 @@
 				<SubmitButton tracker={tracker} on:submit></SubmitButton>
 			</div>
 			<div class="control">
-				<button class="button is-info" type="Submit" on:click="set({goto_investigation: true})"><i
-						class="fas fa-file-medical-alt"></i>&nbsp;Save and Create Investigation</button>
+				<button class="button is-info" type="Submit" disabled="{save}" on:click="set({goto_investigation: true})">
+					<i class="fas fa-file-medical-alt"></i>&nbsp;Save and Create Investigation
+				</button>
 			</div>
 			<div class="control">
-				<button class="button is-success" type="Submit" on:click="set({goto_prescription: true})"><i
-						class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription</button>
+				<button class="button is-success" type="Submit" disabled="{save}" on:click="set({goto_prescription: true})">
+					<i class="fas fa-file-prescription"></i>&nbsp;Save and Create Prescription
+				</button>
 			</div>
 		</div>
 		<center class="has-text-danger has-text-weight-bold">{error_message}</center>
